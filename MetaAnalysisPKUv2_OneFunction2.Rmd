@@ -1,0 +1,311 @@
+---
+title: '`r paste0("Meta-analysis results for: ",FunctionTitle)`' 
+output: html_document
+classoption: landscape
+---
+
+```{r setup, echo=FALSE, include=FALSE}
+# in R script used to call .Rmd file set variables for .Rmd header
+
+# FunctionResultsFolder and ForestPlotsFolder need to be set in the calling script, e.g.
+# FunctionResultsFolder<-paste0(CurDir,"/FunctionResults2")
+# ForestPlotsFolder<-paste0(CurDir,"/ForestPlots2")
+
+# CurDir needs to be set in the calling script
+# OverallSummaryFilename needs to be set in the calling script
+
+# this script runs a meta-analysis for a single function (e.g. 'Flexibility and planning')
+
+# the first time you may need to install the library 'metafor'
+# run the following line after removing the '#' then add the '#' back once you've installed the package
+# install.packages("metafor")
+
+# load libraries 
+library(metafor)
+library(metaviz)
+library(kableExtra)
+library(tidyverse)
+library(tidyr)
+library(broom)
+library(altmeta)
+
+# set the working directory to the folder with the data
+# make this match the folder where you've put the files
+
+knitr::opts_knit$set(root.dir=CurDir)
+
+source("ForestPlotFunctions.R")
+```
+
+```{r}
+MyData$StudyNameFactor<-as.factor(MyData$StudyName) # this is just the study citation - can be used for joining
+MyData$FunctionFactor<-as.factor(MyData$Function)
+MyData$TaskNameFactor<-as.factor(MyData$ShortTitle)
+MyData$StudyFactor <- as.factor(MyData$StudyFactor) # puts studies with the same participants together
+
+MyData$CurrentPhe[which(is.na(MyData$CurrentPhe))] <- mean(MyData$CurrentPhe,na.rm=TRUE)
+MyData$CenteredPhe <- MyData$CurrentPhe - mean(MyData$CurrentPhe)
+```
+
+
+```{r}
+g_summary <- MyData %>% summarise(mean_g = mean(g), sd_g = sd(g), N=n())
+g_summary %>%  
+  kable() %>% 
+  kable_styling() 
+```
+
+**NOTE** - unweighted values
+
+```{r}
+MeasureData <- MyData %>% select(Function, StudyFactor, CurrentPhe, ExpN, ControlN) %>% group_by(StudyFactor) %>% summarise(Function=unique(Function), N_measures = n())
+MeasureData %>% kable() %>% kable_styling()
+```
+```{r}
+N_Measures<-sum(MeasureData$N_measures)
+cat(sprintf("Number of measures in the %s function group: %d\n",MeasureData$Function[1],N_Measures))
+N_Groups <- nrow(MeasureData)
+cat(sprintf("Number of ppt groups in the %s function group: %d\n",MeasureData$Function[1],N_Groups))
+```
+
+```{r}
+StudyData<-MyData %>% select(Function, StudyFactor, CurrentPhe, ExpN, ControlN) %>% group_by(StudyFactor) %>% summarize(Function=unique(Function), CurrentPhe = mean(CurrentPhe), # should all be the same
+          ExpN = max(ExpN),
+          ControlN = max(ControlN))
+StudyData %>% kable() %>% kable_styling()
+```
+
+```{r}
+StudyDataSummary <- StudyData %>% group_by(Function) %>% 
+  summarize(Function=unique(Function),
+  CurrentPhe=mean(CurrentPhe),
+  N_PKU = sum(ExpN), N_Control = sum(ControlN))
+StudyDataSummary %>% kable() %>% kable_styling()
+```
+
+
+```{r}
+# heterogeneity calcultions
+
+HetResult<-metahet(MyData$g,MyData$Vg)
+ISqr<-HetResult$I2
+Q<-HetResult$Q
+TauSqr<-HetResult$tau2.DL
+```
+
+```{r output='asis'}
+# this step does the statistical model for the meta-analysis
+# g is the effect sizes
+# Vg is the variance of the effect sizes
+# random is what describes the relationship between numbers and studies
+# 1 | StudyNum / ObsNum means that ObsNum (different for each measure) is nested
+# within StudyNum.  "1 |" is needed because this is how random intercepts are
+# described when specifying a mixed-effect model.  1 means intercept and what follows
+# the | is what the intercept is for. 1 | StudyNum / ObsNum means a random intercept for
+# ObsNum nested within StudyNum
+MyData<-MyData[order(MyData$StudyName,MyData$ShortTitle),] # make sure that model results and table results (below)
+# are in the same order
+
+RandomTermString = "~ 1 | StudyFactor / TaskNameFactor"
+
+M1<-rma.mv(g,Vg,random = formula(RandomTermString),test="z", data=MyData, method="REML")
+
+M1 %>% tidy() %>% 
+  kable() %>% 
+  kable_styling() 
+```
+
+
+
+```{r}
+WtMatrix<-weights(M1,type="matrix")
+WtRowSum<-apply(WtMatrix,1,sum)
+MyData$Weights<-WtRowSum/sum(WtRowSum)
+
+# check
+MyData$gWt<-MyData$Weights * MyData$g
+sum(MyData$gWt) # for checking - should be the same as M1$beta (if so, you know weight value is correct)
+```
+
+```{r}
+ES_est_mean <- M1$beta[[1]]
+ESwt_plot <- ggplot(MyData, aes(x=g,y=seq(1,length(g)),size=Weights)) +
+  geom_point(alpha=0.8,shape=1) +
+  geom_vline(xintercept=ES_est_mean,linetype = 2,size=0.5) +
+  annotate(geom="label", x = ES_est_mean-1,y = 2,label = sprintf("Overall ES = %.2f",ES_est_mean),color = "black") + xlab(expression("Glass' " ~ Delta)) + ylab("Study number")
+ESwt_plot
+```
+
+
+```{r}
+M1a<-rma.mv(g,Vg,random = formula(RandomTermString), mods= ~ 1,test="z", data=MyData)
+M2<-NA
+RaisedError<-tryCatch(
+  {
+    control=list(maxiter=1000)
+    control=list(verbose=TRUE)
+    verbose=TRUE
+    M2<-rma.mv(g,Vg,random = formula(RandomTermString), mods= ~ CenteredPhe, test="z", data=MyData)
+    PheCoefficient <- M2$b[[2,1]]
+  },
+  error=function(cond){
+    message("Problem fitting Phe model - skipping Phe model...")
+    return(NA)
+  }
+)
+if(is.na(RaisedError)){
+  PheCoefficient="-"
+}else{
+  M2 %>% tidy() %>% 
+  kable() %>% 
+  kable_styling() 
+}
+```
+
+```{r}
+if(!is.na(RaisedError)){
+  MyData$PhePredictedG <- fitted(M2)
+  Phe_plot <- ggplot(MyData, aes(x=CurrentPhe,y=g,size=Weights)) +
+    geom_point(alpha=0.8,shape=1) +
+    geom_line(aes(x=CurrentPhe,y=PhePredictedG),color="black",size=0.5,linetype="dashed") +
+    ylab(expression("Glass' " ~ Delta)) + xlab("Current Phe")
+  Phe_plot
+}
+```
+
+```{r}
+if(!is.na(RaisedError)){
+  # positive if M2 (model with Phe) is better (because AIC for  M2 will be lower)
+  AICdiff <- AIC(M1) - AIC(M2)
+  cat(sprintf("AIC difference (positive if evidence favours Phe model, evidence is stronger > 2): %0.4f",AICdiff))
+}else{
+  AICdiff <- "-"
+}
+```
+
+```{r}
+if(!is.na(RaisedError)){
+  PheAnovaResult<-anova(M2,M1a) # M1a is non-REML fit
+  PheAnovaPValue<-PheAnovaResult$pval
+  print(PheAnovaResult)
+}else{
+  PheAnovaPValue<-"-"
+}
+```
+
+
+
+```{r}
+# put study information in a table for the plot
+# %>% rename("PKU Mean"=ExpMean, "PKU SD"=ExpSD, "PKU N"=ExpN, "Control mean" = ControlMean, "Control SD" = ControlSD, "Control N" = ControlN, "Glass delta" = SMD)
+PlotTableRaw <- MyData %>% select(StudyName, ShortTitle, ExpMean, ExpSD, ExpN, ControlMean, ControlSD, ControlN, Weights)
+PTable<-data.frame(
+  StudyName=sprintf("%s",PlotTableRaw$StudyName),
+  MeasureName=sprintf("%s",PlotTableRaw$ShortTitle),
+  ExpMean=sprintf("%6.2f",PlotTableRaw$ExpMean),
+  ExpSD=sprintf("%6.2f", PlotTableRaw$ExpSD),
+  ExpN=sprintf("%3d",PlotTableRaw$ExpN),
+  ControlMean=sprintf("%6.2f",PlotTableRaw$ControlMean),
+  ControlSD=sprintf("%6.2f", PlotTableRaw$ControlSD),
+  ControlN=sprintf("%3d",PlotTableRaw$ControlN),
+  Weight=sprintf("%.1f",PlotTableRaw$Weights*100)
+  )
+PTable %>% kable() %>% kable_styling()
+```
+
+```{r}
+if(UsePlotRangeDefaults){ # limits to forest plot
+  MinES <- -3 
+  MaxES <- 2
+}
+
+if(UsePlotPercentDefaults){ # horizontal space percentages allocated to 
+  # different parts of the forest plot
+  PlotPercentage<- .35  # percentage of space devoted to forest plot (vs text)
+  StudyNamePercent<-0.25 # percent of _text_ area for study name
+  MeanPercent<-0.085 # width of columns for means - % of total _text_ area
+  SDPercent<-0.06 # width of column for SD
+  NPercent<-0.04 # width of column for N
+  WtPercent<-0.04
+}
+
+LittleSep<-0.002 # separation between columns in a group (% of _text_ area)
+BigSep<-0.004 # separation between columns in different groups (% of _text_ area)
+TextMargin<-0.01 # space between text and plot (% of text area)
+
+ColumnSep<-c(LittleSep,LittleSep,LittleSep,LittleSep,BigSep,LittleSep,LittleSep,LittleSep)
+ColumnWidths<-c(MeanPercent,SDPercent,NPercent,MeanPercent,SDPercent,NPercent,WtPercent)
+MeasureWidth<-(1-TextMargin)-(sum(ColumnSep)+sum(ColumnWidths)+StudyNamePercent)
+if(MeasureWidth < 0){
+  c("******WARNING***** space for Measure is too small ************")
+}
+ColumnWidths<-c(MeasureWidth,ColumnWidths)
+ColumnAlign<-c(4,2,2,2,2,2,2,2) # first is left aligned, others centered
+HeaderAlign<-c(1,1,1,1,1,1,1,1) # center headers
+
+ColumnPositionPercentages<-InterleaveSepsAndWidths(ColumnSep,ColumnWidths,ColumnAlign)
+ColumnPositionPercentages<-ColumnPositionPercentages+StudyNamePercent
+
+HeaderPositionPercentages<-InterleaveSepsAndWidths(ColumnSep,ColumnWidths,HeaderAlign)
+HeaderPositionPercentages<-HeaderPositionPercentages+StudyNamePercent
+
+HeaderLine1<-c("Measure","Mean","SD","N","Mean","SD","N","% Wt")
+HeaderLine2<-c("","","PKU","","","Control","")
+AxisTitle<-"PKU worse        Effect size        PKU better"
+MeasureTitle<-"Flexibility and planning"
+
+HeteroString<-sprintf(" Heterogeneity: Q(%2d) = %3.2f, p<%0.2f, I-squared = %0.3f, Tau-squared = %0.3f", M1$k-1, M1$QE, M1$QEp, ISqr, TauSqr)
+
+PlotFilename<-paste0("ForestPlots2/",FunctionFilename,".tiff")
+
+MetaModel<-M1
+TextDF<-PTable
+MyCex<-0.94
+
+ForestPlotWithSummary(FunctionTitle,PlotFilename,MetaModel,PlotPercentage,
+                      StudyNamePercent,TextDF,ColumnPositionPercentages,
+                      ColumnAlign,HeaderPositionPercentages,HeaderLine1,
+                      HeaderLine2,MyCex,AxisTitle,HeteroString,MinES,MaxES)
+```
+
+
+```{r}
+combined_es = M1$beta[[1]]
+es_z_value = M1$zval[[1]]
+es_p_value = M1$pval[[1]]
+ci_lower = M1$ci.lb[[1]]
+ci_upper = M1$ci.ub[[1]]
+q_df = M1$k-1
+q_value = M1$QE[[1]]
+q_p_value = M1$QEp[[1]]
+i_squared = ISqr
+tau_squared = TauSqr
+
+FunctionOrder <- FunctionOrderInformation$Order[FunctionOrderInformation$Function == FunctionID]
+
+meta_result_df = tibble(function_order = FunctionOrder,
+                        function_name = FunctionTitle,
+                        N_Groups=N_Groups,
+                        N_Measures=N_Measures,
+                        N_PKU = StudyDataSummary$N_PKU,
+                        Current_Phe = StudyDataSummary$CurrentPhe,
+                        N_Control = StudyDataSummary$N_Control,
+                        combined_es = combined_es,
+                        es_ci_upper = ci_upper,
+                        es_ci_lower = ci_lower,                        
+                        z_value = es_z_value,
+                        p_value = es_p_value,
+                        heterogeneity_q_value = q_value,
+                        heterogeneity_df = q_df,
+                        heterogeneity_p_value = q_p_value,
+                        heterogeneity_i_value = i_squared,
+                        heterogeneity_tau_value = tau_squared,
+                        Phe_coefficient = PheCoefficient,
+                        Phe_model_AIC_diff = AICdiff,
+                        Phe_model_p_value = PheAnovaPValue)
+                        
+result_filename = paste0("FunctionResults2/",FunctionFilename,"_meta-analysis_result.csv")
+write_csv(meta_result_df,result_filename,append=FALSE)
+write_csv(meta_result_df,OverallSummaryFilename,append=TRUE)
+```
+

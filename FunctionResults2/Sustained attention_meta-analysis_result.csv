@@ -1,0 +1,2 @@
+function_order,function_name,N_Groups,N_Measures,N_PKU,Current_Phe,N_Control,combined_es,es_ci_upper,es_ci_lower,z_value,p_value,heterogeneity_q_value,heterogeneity_df,heterogeneity_p_value,heterogeneity_i_value,heterogeneity_tau_value,Phe_coefficient,Phe_model_AIC_diff,Phe_model_p_value
+4,Sustained attention,8,11,225,953.25,208,-0.6494564550598265,-0.42840140318104947,-0.8705115069386036,-5.758345039507894,8.494259309945879e-9,13.186837947617828,10,0.21341233370816348,0.2416680905822098,0.03652638259472639,-8.555071928294247e-4,1.337581951787179,0.06771405136854333

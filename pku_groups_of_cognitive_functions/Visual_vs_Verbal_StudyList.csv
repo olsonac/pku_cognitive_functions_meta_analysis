@@ -1,0 +1,75 @@
+﻿FunctionGroup,Function,StudyName,ShortTitle
+Verbal,Inhibition,De Felice et al 2018,Block Cyclic Naming-Diff 4th-1st cycle-RT
+Verbal,Inhibition,Palermo et al 2017,"Stroop, Incongruous-congruous- RT"
+Verbal,Inhibition,Palermo et al 2017,Continuous Naming -  5th-1st pos-RT
+Verbal,Inhibition,Sundermann et al 2011 - Gr1,"Stroop, Incongruous-neutral - RT"
+Verbal,Inhibition,Sundermann et al 2011 - Gr2,"Stroop, Incongruous-neutral - RT"
+Verbal,Inhibition,Ulrich et al. 1996,Colour Word Interference Task
+Verbal,Naming RT,De Felice et al 2018,Block Cyclic Naming-RT
+Verbal,Naming RT,Palermo et al 2017,Continuous Picture Naming-RT 
+Verbal,Naming RT,Palermo et al 2017,Colour Naming-RT
+Verbal,Naming RT,Palermo et al 2017,Word Reading-RT
+Verbal,Naming RT,Palermo et al 2017,Non-word reading-RT
+Verbal,Naming RT,Sundermann et al 2011 - Gr1,Stroop: neutral condition-RT
+Verbal,Naming RT,Sundermann et al 2011 - Gr2,Stroop: neutral condition-RT
+Verbal,Verbal learning LTM,Aitkenhead et al 2021,CVLT-II Trials 1-5
+Verbal,Verbal learning LTM,Channon et al 2004,Rey AVLT - Delayed recall  - % corr
+Verbal,Verbal learning LTM,Channon et al 2004,Rey AVLT - Recognition % cor
+Verbal,Verbal learning LTM,Moyle et al 2007,WMS-III - Auditory delayed recall
+Verbal,Verbal learning LTM,Moyle et al 2007,WMS-III - Delayed recognition
+Verbal,Verbal learning LTM,Palermo et al 2017,Rey AVLT- Recall - % err
+Verbal,Verbal learning LTM,Palermo et al 2017,Rey AVLT - Delayed recall  - % err
+Verbal,Verbal learning LTM,Palermo et al 2017,P-ass-Verl - Recall - % err
+Verbal,Verbal learning LTM,Palermo et al 2017,P-ass-Verl - Delayed recall - % err
+Verbal,Verbal learning LTM,Romani et al 2020,P-ass-Verl - Recall - % err
+Verbal,Verbal learning LTM,Romani et al 2020,P-ass-Verl - Delayed recall - % err
+Verbal,Verbal learning LTM,Smith et al 1996 - High Phe,Story memory-immediate
+Verbal,Verbal learning LTM,Smith et al 1996 - High Phe,Story memory-delayed
+Verbal,Verbal learning LTM,Smith et al 1996 - Low Phe,Story memory-immediate
+Verbal,Verbal learning LTM,Smith et al 1996 - Low Phe,Story memory-delayed
+Verbal,Verbal STM/WM,Abgottspon et al. ,3 back - correct
+Verbal,Verbal STM/WM,Abgottspon et al. ,4 back - speed 
+Verbal,Verbal STM/WM,Aitkenhead et al 2021,Digit span (from WAIS IV)
+Verbal,Verbal STM/WM,Aitkenhead et al 2021,Digit backwards (from WAIS IV)
+Verbal,Verbal STM/WM,Channon et al 2005,"0,1,2 back - % cor"
+Verbal,Verbal STM/WM,Channon et al 2007,"0,1,2 back - % cor"
+Verbal,Verbal STM/WM,Channon et al 2007,"0,1,2 back - Speed"
+Verbal,Verbal STM/WM,Moyle et al 2007,WMS-III Auditory Immediate Memory
+Verbal,Verbal STM/WM,Palermo et al 2017,Digit span
+Verbal,Verbal STM/WM,Palermo et al 2017,Nonword repetition - % err
+Verbal,Verbal STM/WM,Romani et al 2020,Digit span
+,,,
+Visual,Inhibition,Channon et al 2005 on diet,"Flanker Task, Inc-comp-Speed "
+Visual,Inhibition,Channon et al 2007 off diet,"Flanker Task, Inc-comp Speed "
+Visual,Inhibition,Sundermann et al 2020,Go-No go cor RT
+Visual,Sustained attention,Schmidt et al 1994,Dot pattern exercise t1 - RT
+Visual,Sustained attention,Ulrich et al. 1996,Dot pattern exercise t1 - RT
+Visual,Visual learning LTM,Channon et al 2004,Complex figure recogntion-% cor
+Visual,Visual learning LTM,Channon et al 2004,Complex figure delayed recall-% cor
+Visual,Visual learning LTM,Moyle et al 2007,WMS-III Visual delayed
+Visual,Visual learning LTM,Nardecchia et al 2015,Rey Figure recall-% cor
+Visual,Visual learning LTM,Palermo et al 2017,P-ass VisL % err
+Visual,Visual learning LTM,Palermo et al 2017,P-ass-VisL % err
+Visual,Visual learning LTM,Pilotto et al 2021,Rey Figue recall-Raw score
+Visual,Visual learning LTM,Ris et al 1994,Rey Figue recall-Raw score
+Visual,Visual learning LTM,Romani et al 2020,P-ass VisL % err
+Visual,Visual spatial attention RT,Jahja et al 2017,Memory search-low load-RT
+Visual,Visual spatial attention RT,Jahja et al 2017,Memory search-high load-RT
+Visual,Visual spatial attention RT,Palermo et al 2017,Choice detection - RT
+Visual,Visual spatial attention RT,Palermo et al 2017,Detection w/distractors - RT
+Visual,Visual spatial attention RT,Palermo et al 2017,Feature search - RT
+Visual,Visual spatial attention RT,Palermo et al 2017,Conjoined search - RT
+Visual,Visual spatial attention RT,Ris et al 1994,ADM visual search - RT
+Visual,Visual spatial attention RT,Romani et al 2020,Detection w/distractors - RT
+Visual,Visual spatial attention RT,Romani et al 2020,Feature search - RT
+Visual,Visual spatial attention RT,Romani et al 2020,Conjoined search - RT
+Visual,Visual STM,Jahja et al 2017,Feature integration-RT
+Visual,Visual STM,Channon et al 2004,Self ordered pointing - N cor
+Visual,Visual STM,Jahja et al 2017,Feature integration-N err
+Visual,Visual STM,Jahja et al 2017,Feature integration-RT
+Visual,Visual STM,Jahja et al 2017,Visuospatial sequencing-N cor
+Visual,Visual STM,Moyle et al 2007,WMS-III Visual Immedjate Memory
+Visual,Visual STM,Palermo et al 2017,Corsi span
+Visual,Visual STM,Romani et al 2020,Corsi span
+Visual,Visual STM,Smith et al 1996 - High Phe,Self ordered pointing-N err
+Visual,Visual STM,Smith et al 1996 - Low Phe,Self ordered pointing-N err

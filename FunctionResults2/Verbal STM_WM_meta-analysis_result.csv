@@ -1,0 +1,2 @@
+function_order,function_name,N_Groups,N_Measures,N_PKU,Current_Phe,N_Control,combined_es,es_ci_upper,es_ci_lower,z_value,p_value,heterogeneity_q_value,heterogeneity_df,heterogeneity_p_value,heterogeneity_i_value,heterogeneity_tau_value,Phe_coefficient,Phe_model_AIC_diff,Phe_model_p_value
+10,Verbal STM/WM,7,11,291,902.9,247,-0.3082245131457385,-0.060751694846284676,-0.5556973314451923,-2.4411123171799796,0.014642100074909908,12.51285705741284,10,0.25219723087757573,0.20082200618796153,0.026999415619680868,2.1990214433279188e-4,-1.7411444872815238,0.6109075252462328

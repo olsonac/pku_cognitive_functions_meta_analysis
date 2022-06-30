@@ -1,0 +1,42 @@
+---
+title: "Compare_function_groups_workflow"
+author: "Andrew Olson"
+date: "16/05/2022"
+output: html_document
+---
+
+### Compare groups of functions in PKU patients
+
+accuracy vs RT  
+language vs executive function  
+visual vs verbal tasks  
+
+The data used as a starting point is:
+/Users/Olsonac-admin/Documents/current/PKU/pku_cog_functions_meta_analysis/May2022_meta-analysis_with_added_papers/DataForMetaAnalysis.csv
+
+See that folder for additional information about where the .csv comes from.
+
+Each contrast is run by the script: MetaAnalysisPKUv2_GroupsOfFunctions.Rmd
+
+The groups are defined in .csv files -- e.g.:
+
+EF_lang_EFvsLang
+EF_lang_individual_functions (produces plots for individual functions)
+Visual_vs_Verbal
+Accuracy_vs_ReactionTime
+
+All analysis can be run together by running the script: RunSpecificContrasts.R
+
+Forest plots end up in the folder ForestPlots  
+Analysis results end up in the folder MetaAnalysisResults
+
+For the meta-analysis results you will see a result like the following:
+
+	term	type	estimate	std.error	statistic	p.value
+1	intercept	summary	-0.995074591	0.218605246	-4.551924567	5.32E-06
+2	mods	summary	0.529479968	0.151308837	3.499332758	0.000466424
+
+The 'mods' line contains the result of the comparison between groups (in this case between executive function tasks and language tasks)
+
+Channon, 2007 off diet RT/acc eliminated from acc/rt comparison because acc result is an outlier
+

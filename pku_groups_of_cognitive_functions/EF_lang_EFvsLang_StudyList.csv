@@ -1,0 +1,69 @@
+﻿Function,StudyName,ShortTitle,FunctionGroup
+Flexibility,Aitkenhead et al 2021,Digit/symbol coding,Executive function
+Flexibility,Aitkenhead et al 2021,DKefs Card Sorting,Executive function
+Flexibility,Aitkenhead et al 2021,Letter fluency,Executive function
+Flexibility,Aitkenhead et al 2021,Semantic fluency,Executive function
+Flexibility,Channon et al 2004,Letter fluency,Executive function
+Flexibility,Channon et al 2005,Object Alternation-% correct,Executive function
+Flexibility,Channon et al 2007,Object Alternation-% correct,Executive function
+Flexibility,Moyle et al 2007,Letter fluency,Executive function
+Flexibility,Moyle et al 2007,Semantic fluency,Executive function
+Flexibility,Nardecchia et al 2015,WCST- N perseverations,Executive function
+Flexibility,Palermo et al 2017,Digit/symbol - % err,Executive function
+Flexibility,Palermo et al 2017,Letter fluency ,Executive function
+Flexibility,Palermo et al 2017,Semantic fluency ,Executive function
+Flexibility,Palermo et al 2017,WCST- N categories - correct,Executive function
+Flexibility,Palermo et al 2017,WCST- N perseverations,Executive function
+Flexibility,Pilotto et al 2021,Letter fluency,Executive function
+Flexibility,Pilotto et al 2021,Semantic fluency,Executive function
+Flexibility,Ris et al 1994,WCST- N perseverations,Executive function
+Flexibility,Romani et al 2020,Digit/symbol - % err,Executive function
+Flexibility,Romani et al 2020,Letter fluency ,Executive function
+Flexibility,Romani et al 2020,Semantic fluency ,Executive function
+Flexibility,Romani et al 2020,WCST- N categories - correct,Executive function
+Flexibility,Romani et al 2020,WCST- N perseverations,Executive function
+Flexibility,Smith et al 1996 - High Phe,WCST- N categories-correct,Executive function
+Flexibility,Smith et al 1996 - High Phe,WCST- N perseverations,Executive function
+Flexibility,Smith et al 1996 - Low Phe,WCST- N categories-correct,Executive function
+Flexibility,Smith et al 1996 - Low Phe,WCST- N perseverations,Executive function
+Inhibition,Channon et al 2004,Hayling Sentence Completion B - cor/sec.,Executive function
+Inhibition,Channon et al 2005 on diet,"Flanker Task, on diet, Comp-inc-N correct",Executive function
+Inhibition,De Felice et al 2018,Hayling Sentence Completion B-N err,Executive function
+Inhibition,Moyle et al 2007,Go-No go false alarms ,Executive function
+Inhibition,Palermo et al 2017,Continuous Naming - 5th-1st pos-% err,Executive function
+Inhibition,Palermo et al 2017,"Stroop, Incongruous-congruous - % err",Executive function
+Inhibition,Sundermann et al 2020,Go-No go Err,Executive function
+Inhibition,Ulrich et al. 1996,Colour Word Interference Task,Executive function
+Reasoning ,Channon et al 2004,Brixton scaled - Score,Executive function
+Reasoning ,Channon et al 2004,Six elements - Rules per minute,Executive function
+Reasoning ,Nardecchia et al 2015,Elithorns - N solved trials,Executive function
+Reasoning ,Nardecchia et al 2015,Tower of London - Score,Executive function
+Reasoning ,Palermo et al 2017,Tower of Hanoi - % of unsolved trials ,Executive function
+Reasoning ,Pilotto et al 2021,Tower of London - Score,Executive function
+Sustained attention,Jahja et al 2017,Dots task - N err,Executive function
+Sustained attention,Jahja et al 2017,Dots task - Series time,Executive function
+Sustained attention,Palermo et al 2017,Rapid Visual Processing - % err,Executive function
+Sustained attention,Romani et al 2020,Rapid Visual Processing - % err,Executive function
+Sustained attention,Schmidt et al 1994,Dot pattern exercise t1 - N err,Executive function
+Sustained attention,Weglage et al 2013,D2 Test - N correct; baseline,Executive function
+Higher Language Skills,De Felice et al 2018,Appreciation of Humour-N err,Language 
+Higher Language Skills,De Felice et al 2018,Conflicting Prosody - N err,Language 
+Higher Language Skills,De Felice et al 2018,Emotional Prosody - N err,Language 
+Higher Language Skills,De Felice et al 2018,Inferred meaning - N err,Language 
+Higher Language Skills,De Felice et al 2018,Metaphor Picture  - N err,Language 
+Higher Language Skills,De Felice et al 2018,Non Emotional Prosody - N err,Language 
+Higher Language Skills,De Felice et al 2018,Verbal Narrative - % cor info units ,Language 
+Higher Language Skills,De Felice et al 2018,Verbal Narrative - Main concepts - % cor,Language 
+Higher Language Skills,De Felice et al 2018,Verbal Narrative - Mean utterance length,Language 
+Higher Language Skills,Palermo et al 2017,WASI Similarities - N cor,Language 
+Higher Language Skills,Palermo et al 2017,WASI Vocabulary - N cor,Language 
+Language Accuracy,De Felice et al 2018,Block Cyclic Naming 1st cycle - % err,Language 
+Language Accuracy,De Felice et al 2018,Verbal Narrative - % err,Language 
+Language Accuracy,Palermo et al 2017,Colour Naming - % err,Language 
+Language Accuracy,Palermo et al 2017,Continuous Picture Naming - % err,Language 
+Language Accuracy,Palermo et al 2017,Non-word reading - % err,Language 
+Language Accuracy,Palermo et al 2017,Word Reading - % err,Language 
+Language Accuracy,Pilotto et al 2021,Boston Naming,Language 
+Language Accuracy,Pilotto et al 2021,Token test,Language 
+Spelling,Palermo et al 2017,Non-Word Spelling - % err,Language 
+Spelling,Palermo et al 2017,Word Spelling - % err,Language 

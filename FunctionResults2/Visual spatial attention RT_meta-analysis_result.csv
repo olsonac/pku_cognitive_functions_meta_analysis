@@ -1,0 +1,2 @@
+function_order,function_name,N_Groups,N_Measures,N_PKU,Current_Phe,N_Control,combined_es,es_ci_upper,es_ci_lower,z_value,p_value,heterogeneity_q_value,heterogeneity_df,heterogeneity_p_value,heterogeneity_i_value,heterogeneity_tau_value,Phe_coefficient,Phe_model_AIC_diff,Phe_model_p_value
+16,Visual spatial attention RT,4,10,138,937.25,121,-0.8031909605838741,-0.5873129526424563,-1.0190689685252918,-7.292198823141433,3.049366944595474e-13,8.371248096086626,9,0.497209066722422,-0.0751085019457614,0,-9.214163269640307e-4,0.19709306157605155,0.138271274834333

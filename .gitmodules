@@ -1,0 +1,3 @@
+[submodule "pku_groups_of_cognitive_functions"]
+	path = pku_groups_of_cognitive_functions
+	url = https://github.com/olsonac/pku_groups_of_cognitive_functions

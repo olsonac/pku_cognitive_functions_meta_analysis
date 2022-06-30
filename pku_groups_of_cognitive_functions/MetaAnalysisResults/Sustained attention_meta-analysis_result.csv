@@ -1,0 +1,2 @@
+function_name,combined_es,z_value,p_value,es_ci_lower,es_ci_upper,homogeneity_q_value,homogeneity_df,homogeneity_p_value,homogeneity_i_value,homogeneity_tau_value
+Sustained attention,-0.6363150694309242,-4.115223385451083,3.8680462105021494e-5,-0.9393738592195642,-0.33325627964228416,9.042180543286861,5,0.1073934995727121,0.44703603560403105,0.059758299988180226

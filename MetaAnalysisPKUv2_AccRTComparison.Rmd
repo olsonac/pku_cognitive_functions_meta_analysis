@@ -1,0 +1,477 @@
+---
+title: "Accuracy vs RT" 
+output: html_document
+classoption: landscape
+knit: (function(inputFile, encoding) { 
+      out_dir <- 'FunctionResults2';
+      rmarkdown::render(inputFile,
+                        encoding=encoding, 
+                        output_file=file.path(dirname(inputFile), out_dir, 'AccuracyVsRTAnalysis.html')) })
+---
+
+This script is really superceded by the scripts in "/Users/Olsonac-admin/Documents/current/PKU/pku_function_groups" which allow different groupings of functions to be compared.  We've kept this just for comparison/archive purposes.
+
+```{r setup}
+# this script runs a meta-analysis for a single function (e.g. 'Flexibility and planning')
+# NOTE:  change the "title:" above to the name of the measure you are analyzing
+#        There are some similar variables that need to be set below so labels are correct
+#        see the comment #  SET THE TASK TITLE HERE # below
+#        and the comment for the plot filename in the same region
+
+# the first time you may need to install the library 'metafor'
+# run the following line after removing the '#' then add the '#' back once you've installed the package
+# install.packages("metafor")
+
+# added heterogeneity measure and pooled effect size (was just z-stat and p-value)
+
+#rm(list = ls()) # clear global environment
+
+# load libraries 
+library(metafor)
+library(metaviz)
+library(kableExtra)
+library(tidyverse)
+library(altmeta)
+library(broom)
+
+options(digits = 10) # make sure we have sufficient digits when writing .csv files 
+
+# set the working directory to the folder with the data
+# make this match the folder where you've put the files
+CurDir<-"~/Documents/current/PKU/pku_cog_functions_meta_analysis/May2022_meta-analysis_with_added_papers"
+knitr::opts_knit$set(root.dir=CurDir)
+
+
+
+setwd(CurDir)
+source("ForestPlotFunctions.R")
+```
+
+```{r}
+RawData<-read.csv("DataForMetaAnalysis.csv")
+head(RawData)
+```
+
+```{r}
+AccRTStudies<-read.csv("Accuracy_vs_ReactionTime_StudyList.csv")
+head(AccRTStudies)
+```
+
+```{r}
+########################  SET THE TASK TITLE HERE ##################################
+# label for this file
+TaskTitle<-"AccVsRT"   
+####################### SET THE OUTPUT FILENAME FOR THE PLOT HERE ##################
+TaskFilename<-"AccVsRT"  # change the label here to match the data -- this will be used to label the plot file output.
+```
+
+
+```{r}
+RawData$StudyNameFactor<-as.factor(RawData$StudyName)
+RawData$FunctionFactor<-as.factor(RawData$Function)
+RawData$TaskNameFactor<-as.factor(RawData$ShortTitle)
+RawData$StudyFactor <- as.factor(RawData$StudyFactor)
+
+AccRTStudies$FunctionFactor<-factor(as.character(AccRTStudies$Function),levels=levels(RawData$FunctionFactor))
+AccRTStudies$StudyNameFactor<-factor(as.character(AccRTStudies$StudyName),levels=levels(RawData$StudyNameFactor))
+AccRTStudies$TaskNameFactor<-factor(as.character(AccRTStudies$ShortTitle),levels=levels(RawData$TaskNameFactor))
+AccRTStudies$AccRT<-as.factor(AccRTStudies$FunctionGroup)
+
+# just keep columns used in join
+AccRTStudies<-AccRTStudies %>% select(FunctionFactor,StudyNameFactor,TaskNameFactor,AccRT)
+
+PKUData<-left_join(AccRTStudies,RawData,by=c("FunctionFactor",
+                                          "StudyNameFactor",
+                                          "TaskNameFactor"),keep=FALSE)
+```
+
+
+```{r}
+MyData<-PKUData
+# write.csv(MyData,"Acc_vs_rt_raw_data.csv",row.names=FALSE) # for checking
+
+# substitute mean if CurrentPhe is missing
+MyData$CurrentPhe[which(is.na(MyData$CurrentPhe))]<-mean(MyData$CurrentPhe,na.rm=TRUE)
+
+
+# variables are in the form:
+# [data frame] $ [column name]  e.g. PKUData$ExpN refers to the PKU datq frame
+# and the "ExpN" column (this has the N for the number of patients in a study)
+
+head(MyData)
+```
+
+```{r}
+StudySummary <- MyData %>% select(StudyName, ShortTitle, Function, AccRT) %>% group_by(StudyName,ShortTitle,Function,AccRT) %>% summarise(N=n())
+print(StudySummary)
+```
+
+
+```{r}
+ggplot(MyData,aes(x=AccRT,y=g)) + geom_boxplot() + geom_jitter(color="grey", alpha=0.5)
+```
+
+Note that these results are unweighted
+
+```{r}
+UnWeightedGSummary <- MyData %>% group_by(AccRT) %>% summarise(mean_g = mean(g), sd_g = sd(g), n_g = n())
+print(UnWeightedGSummary)
+```
+**Warning** unweighted results -- for cross-checking ballpark figures with weighted results
+            weighted results should be reported
+
+```{r}
+HetResult<-metahet(MyData$g,MyData$Vg)
+ISqr<-HetResult$I2
+Q<-HetResult$Q
+TauSqr<-HetResult$tau2.DL
+```
+
+```{r}
+# this step does the statistical model for the meta-analysis
+# g is the effect sizes
+# Vg is the variance of the effect sizes
+# random is what describes the relationship between numbers and studies
+# 1 | StudyNum / ObsNum means that ObsNum (different for each measure) is nested
+# within StudyNum.  "1 |" is needed because this is how random intercepts are
+# described when specifying a mixed-effect model.  1 means intercept and what follows
+# the | is what the intercept is for. 1 | StudyNum / ObsNum means a random intercept for
+# ObsNum nested within StudyNum
+
+RandomTermString <- "~ 1 | StudyFactor / TaskNameFactor "
+
+MRTAcc<-rma.mv(g,
+           Vg,
+           random = formula(RandomTermString), 
+           mods = ~ AccRT,
+           test="z", 
+           data=MyData, 
+           method="REML")
+summary(MRTAcc)
+```
+
+
+```{r}
+MyData$CenteredPhe<-MyData$CurrentPhe-mean(MyData$CurrentPhe)
+```
+
+```{r}
+AccData<-MyData[MyData$AccRT == "accuracy",]
+
+AccHetResult<-metahet(AccData$g,AccData$Vg)
+AccISqr<-AccHetResult$I2
+AccQ<-AccHetResult$Q
+AccTauSqr<-AccHetResult$tau2.DL
+
+AccSummary <-  AccData %>% summarise(mean_g = mean(g), sd_g=sd(g), N_g=n())
+print(AccSummary)
+```
+
+```{r}
+# look at acc with Phe
+
+MAccPhe<-rma.mv(g,
+            Vg,
+            random = formula(RandomTermString), 
+            test="z", 
+            mods= ~ CenteredPhe,
+            data=AccData, 
+            method="REML")
+summary(MAccPhe)
+```
+
+
+```{r}
+# look at acc w/o Phe
+
+MAcc<-rma.mv(g,
+             Vg,
+             random = formula(RandomTermString), 
+             test="z", 
+             data=AccData, 
+             method="REML")
+summary(MAcc)
+```
+
+```{r}
+WtMatrix<-weights(MAcc,type="matrix")
+WtRowSum<-apply(WtMatrix,1,sum)
+AccData$Weights<-WtRowSum/sum(WtRowSum)
+```
+
+```{r}
+
+WtMean2 <- sum(AccData$g * AccData$Weights)
+MyP2 <- ggplot(AccData,aes(x=g, y=seq(1,length(g)), size=Weights)) + geom_point() + geom_vline(xintercept=WtMean2,color="red")
+MyP2 <- MyP2 + annotate(geom="label", x = -0.75,y = 2,label = sprintf("Overall ES = %.2f",WtMean2),color = "red")
+MyP2 <- MyP2 + ggtitle("Accuracy effect sizes weighted by variance")
+MyP2
+```
+
+
+```{r}
+print(WtMean2)
+```
+
+
+```{r}
+PlotTableRaw <- AccData %>% select(StudyName, ShortTitle, ExpMean, 
+                                   ExpSD, ExpN, ControlMean, 
+                                   ControlSD, ControlN, Weights)
+PTable<-data.frame(
+  StudyName=sprintf("%s",PlotTableRaw$StudyName),
+  MeasureName=sprintf("%s",PlotTableRaw$ShortTitle),
+  ExpMean=sprintf("%6.2f",PlotTableRaw$ExpMean),
+  ExpSD=sprintf("%6.2f", PlotTableRaw$ExpSD),
+  ExpN=sprintf("%3d",PlotTableRaw$ExpN),
+  ControlMean=sprintf("%6.2f",PlotTableRaw$ControlMean),
+  ControlSD=sprintf("%6.2f", PlotTableRaw$ControlSD),
+  ControlN=sprintf("%3d",PlotTableRaw$ControlN),
+  Weight=sprintf("%.1f",PlotTableRaw$Weights*100)
+  )
+
+MinES <- -3 
+MaxES <- 2
+
+# different parts of the forest plot
+PlotPercentage<- .35  # percentage of space devoted to forest plot (vs text)
+StudyNamePercent<-0.25 # percent of _text_ area for study name
+MeanPercent<-0.085 # width of columns for means - % of total _text_ area
+SDPercent<-0.06 # width of column for SD
+NPercent<-0.04 # width of column for N
+WtPercent<-0.04
+
+LittleSep<-0.002 # separation between columns in a group (% of _text_ area)
+BigSep<-0.004 # separation between columns in different groups (% of _text_ area)
+TextMargin<-0.01 # space between text and plot (% of text area)
+
+ColumnSep<-c(LittleSep,LittleSep,LittleSep,LittleSep,BigSep,LittleSep,LittleSep,LittleSep)
+ColumnWidths<-c(MeanPercent,SDPercent,NPercent,MeanPercent,SDPercent,NPercent,WtPercent)
+MeasureWidth<-(1-TextMargin)-(sum(ColumnSep)+sum(ColumnWidths)+StudyNamePercent)
+if(MeasureWidth < 0){
+  c("******WARNING***** space for Measure is too small ************")
+}
+ColumnWidths<-c(MeasureWidth,ColumnWidths)
+ColumnAlign<-c(4,2,2,2,2,2,2,2) # first is left aligned, others centered
+HeaderAlign<-c(1,1,1,1,1,1,1,1) # center headers
+
+ColumnPositionPercentages<-InterleaveSepsAndWidths(ColumnSep,ColumnWidths,ColumnAlign)
+ColumnPositionPercentages<-ColumnPositionPercentages+StudyNamePercent
+
+HeaderPositionPercentages<-InterleaveSepsAndWidths(ColumnSep,ColumnWidths,HeaderAlign)
+HeaderPositionPercentages<-HeaderPositionPercentages+StudyNamePercent
+
+HeaderLine1<-c("Measure","Mean","SD","N","Mean","SD","N","% Wt")
+HeaderLine2<-c("","","PKU","","","Control","")
+AxisTitle<-"PKU worse        Effect size        PKU better"
+
+HeteroString<-sprintf(" Heterogeneity: Q(%2d) = %3.2f, p<%0.2f, I-squared = %0.3f, Tau-squared = %0.3f",
+                      MAcc$k-1, MAcc$QE, MAcc$QEp, AccISqr, AccTauSqr)
+
+TextDF<-PTable
+MyCex<-0.94
+ForestPlotWithSummary("Accuracy", "ForestPlots2/Accuracy.tiff", MAcc, PlotPercentage, StudyNamePercent, TextDF, ColumnPositionPercentages, ColumnAlign, HeaderPositionPercentages, HeaderLine1, HeaderLine2, MyCex, AxisTitle, HeteroString, MinES=NULL, MaxES=NULL)
+
+```
+
+
+```{r}
+# look at rt with Phe
+RTData<-MyData[MyData$AccRT == "reaction time",]
+
+RTHetResult<-metahet(RTData$g,RTData$Vg)
+RTISqr<-RTHetResult$I2
+RTQ<-RTHetResult$Q
+RTTauSqr<-RTHetResult$tau2.DL
+
+
+MRTPhe<-rma.mv(g,
+             Vg,
+             random = formula(RandomTermString), 
+             test="z", 
+             mods = ~ CenteredPhe,
+             data=RTData, 
+             method="REML")
+summary(MRTPhe)
+```
+
+```{r}
+rt_summary <- RTData %>% summarise(mean_g = mean(g))
+print(rt_summary)
+```
+
+
+```{r}
+# look at  rt w/o Phe
+
+MRT<-rma.mv(g,
+             Vg,
+             random = formula(RandomTermString), 
+             test="z", 
+             data=RTData, 
+             method="REML")
+summary(MRT)
+```
+
+```{r}
+WtMatrix<-weights(MRT,type="matrix")
+WtRowSum<-apply(WtMatrix,1,sum)
+RTData$Weights<-WtRowSum/sum(WtRowSum)
+
+PlotTableRaw <- RTData %>% select(StudyName, ShortTitle, ExpMean, ExpSD, ExpN, ControlMean, ControlSD, ControlN, Weights)
+PTable<-data.frame(
+  StudyName=sprintf("%s",PlotTableRaw$StudyName),
+  MeasureName=sprintf("%s",PlotTableRaw$ShortTitle),
+  ExpMean=sprintf("%6.2f",PlotTableRaw$ExpMean),
+  ExpSD=sprintf("%6.2f", PlotTableRaw$ExpSD),
+  ExpN=sprintf("%3d",PlotTableRaw$ExpN),
+  ControlMean=sprintf("%6.2f",PlotTableRaw$ControlMean),
+  ControlSD=sprintf("%6.2f", PlotTableRaw$ControlSD),
+  ControlN=sprintf("%3d",PlotTableRaw$ControlN),
+  Weight=sprintf("%.1f",PlotTableRaw$Weights*100)
+  )
+
+MinES <- -3 
+MaxES <- 2
+
+# different parts of the forest plot
+PlotPercentage<- .35  # percentage of space devoted to forest plot (vs text)
+StudyNamePercent<-0.25 # percent of _text_ area for study name
+MeanPercent<-0.085 # width of columns for means - % of total _text_ area
+SDPercent<-0.06 # width of column for SD
+NPercent<-0.04 # width of column for N
+WtPercent<-0.04
+
+LittleSep<-0.002 # separation between columns in a group (% of _text_ area)
+BigSep<-0.004 # separation between columns in different groups (% of _text_ area)
+TextMargin<-0.01 # space between text and plot (% of text area)
+
+ColumnSep<-c(LittleSep,LittleSep,LittleSep,LittleSep,BigSep,LittleSep,LittleSep,LittleSep)
+ColumnWidths<-c(MeanPercent,SDPercent,NPercent,MeanPercent,SDPercent,NPercent,WtPercent)
+MeasureWidth<-(1-TextMargin)-(sum(ColumnSep)+sum(ColumnWidths)+StudyNamePercent)
+if(MeasureWidth < 0){
+  c("******WARNING***** space for Measure is too small ************")
+}
+ColumnWidths<-c(MeasureWidth,ColumnWidths)
+ColumnAlign<-c(4,2,2,2,2,2,2,2) # first is left aligned, others centered
+HeaderAlign<-c(1,1,1,1,1,1,1,1) # center headers
+
+ColumnPositionPercentages<-InterleaveSepsAndWidths(ColumnSep,ColumnWidths,ColumnAlign)
+ColumnPositionPercentages<-ColumnPositionPercentages+StudyNamePercent
+
+HeaderPositionPercentages<-InterleaveSepsAndWidths(ColumnSep,ColumnWidths,HeaderAlign)
+HeaderPositionPercentages<-HeaderPositionPercentages+StudyNamePercent
+
+HeaderLine1<-c("Measure","Mean","SD","N","Mean","SD","N","% Wt")
+HeaderLine2<-c("","","PKU","","","Control","")
+AxisTitle<-"PKU worse        Effect size        PKU better"
+
+HeteroString<-sprintf(" Heterogeneity: Q(%2d) = %3.2f, p<%0.2f, I-squared = %0.3f, Tau-squared = %0.3f", 
+                      MRT$k-1, MRT$QE, MRT$QEp, RTISqr, RTTauSqr)
+
+TextDF<-PTable
+MyCex<-0.94
+ForestPlotWithSummary("Reaction time", "ForestPlots2/reaction_time.tiff", MRT, PlotPercentage, StudyNamePercent, TextDF, ColumnPositionPercentages, ColumnAlign, HeaderPositionPercentages, HeaderLine1, HeaderLine2, MyCex, AxisTitle, HeteroString, MinES=NULL, MaxES=NULL)
+
+```
+
+```{r}
+MyData$Predicted1<-fitted(MRTAcc) # general model with Acc/RT moderator, but no Phe
+```
+
+```{r}
+predicted_summary <- MyData %>% group_by(AccRT) %>% summarise(mean_predicted = mean(Predicted1), n_predicted = n())
+print(predicted_summary)
+```
+
+
+```{r}
+RPlot<-ggplot(MyData,aes(x=CurrentPhe,y=g,group=AccRT,color=AccRT))+geom_point()+geom_point(data=MyData[MyData$AccRT == "accuracy",],aes(x=CurrentPhe,y=Predicted1),color="black",shape=20) +geom_point(data=MyData[MyData$AccRT == "reaction time",],aes(x=CurrentPhe,y=Predicted1),color="black",shape=21)
+print(RPlot) # rt is open circles
+```
+
+This model doesn't take Phe into account
+
+```{r}
+# this step does the statistical model for the meta-analysis
+# g is the effect sizes
+# Vg is the variance of the effect sizes
+# random is what describes the relationship between numbers and studies
+# 1 | StudyNum / ObsNum means that ObsNum (different for each measure) is nested
+# within StudyNum.  "1 |" is needed because this is how random intercepts are
+# described when specifying a mixed-effect model.  1 means intercept and what follows
+# the | is what the intercept is for. 1 | StudyNum / ObsNum means a random intercept for
+# ObsNum nested within StudyNum
+
+
+# model with main effect of Phe and main effect of rt/acc, but no interaction
+MRTAccPhe<-rma.mv(g,
+           Vg,
+           random = formula(RandomTermString), 
+           mods= ~ MyData$CenteredPhe + MyData$AccRT,
+           test="z", 
+           data=MyData, 
+           method="REML")
+summary(MRTAccPhe)
+```
+
+1st line after intercept is the first moderator -- i.e. centered Phe, 
+2nd line after the intercept is the second moderator -- i.e. Accuracy vs RT
+
+```{r}
+MyData$Predicted2<-fitted(MRTAccPhe)
+```
+
+```{r}
+RPlot<-ggplot(MyData,aes(x=CurrentPhe,y=g,group=AccRT,color=AccRT))+geom_point()+geom_point(data=MyData[MyData$AccRT == "accuracy",],aes(x=CurrentPhe,y=Predicted2),color="black",shape=20) +geom_point(data=MyData[MyData$AccRT == "reaction time",],aes(x=CurrentPhe,y=Predicted2),color="black",shape=21)
+RPlot<-RPlot + xlim(600,1500)
+print(RPlot)
+```
+
+```{r}
+# model with Phe X acc/rt interaction
+
+MRTAccPheInter<-rma.mv(g,
+           Vg,
+           random = formula(RandomTermString), 
+           mods= ~ CenteredPhe*AccRT,
+           test="z", 
+           data=MyData, 
+           method="REML")
+summary(MRTAccPheInter)
+```
+
+```{r}
+MyData$Predicted3<-fitted(MRTAccPheInter)
+```
+
+```{r}
+WtMatrix<-weights(MRTAccPheInter,type="matrix")
+WtRowSum<-apply(WtMatrix,1,sum)
+MyData$Weights3<-WtRowSum/sum(WtRowSum)
+
+RPlot<-ggplot(MyData,aes(x=CurrentPhe,y=g,group=AccRT,color=AccRT,size=Weights3))+geom_point(alpha=0.5)+geom_point(data=MyData[MyData$AccRT == "accuracy",],aes(x=CurrentPhe,y=Predicted3),color="black",shape=20,size=3) +geom_point(data=MyData[MyData$AccRT == "reaction time",],aes(x=CurrentPhe,y=Predicted3),color="black",shape=21,size=3)
+RPlot<-RPlot + xlim(600,1500)
+print(RPlot)
+```
+
+```{r}
+AIC(MRTAcc,MRTAccPhe,MRTAccPheInter)
+```
+
+```{r}
+MyData$Predicted<-fitted(MRTAcc)
+```
+
+```{r}
+PredDiffs<-MyData %>% group_by(AccRT) %>% summarise(PredES=mean(Predicted), N=n())
+print(PredDiffs)
+```
+
+predicted accuracy effect size and rt effect size to see difference
+
+```{r}
+PredDiffs$PredES[PredDiffs$AccRT == "reaction time"] - PredDiffs$PredES[PredDiffs$AccRT == "accuracy"]
+```
+
+

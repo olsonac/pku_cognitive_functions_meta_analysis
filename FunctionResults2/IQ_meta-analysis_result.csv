@@ -1,0 +1,2 @@
+function_order,function_name,N_Groups,N_Measures,N_PKU,Current_Phe,N_Control,combined_es,es_ci_upper,es_ci_lower,z_value,p_value,heterogeneity_q_value,heterogeneity_df,heterogeneity_p_value,heterogeneity_i_value,heterogeneity_tau_value,Phe_coefficient,Phe_model_AIC_diff,Phe_model_p_value
+20,IQ,16,19,407,964.4708333333333,439,-0.6011550763302561,-0.41742202434085807,-0.7848881283196542,-6.412794464431567,1.428760915803472e-10,26.79882042016134,18,0.08284694388012347,0.3283286458959886,0.05219871314967243,-2.234972561215634e-4,-1.6471575293337786,0.5525084700297641

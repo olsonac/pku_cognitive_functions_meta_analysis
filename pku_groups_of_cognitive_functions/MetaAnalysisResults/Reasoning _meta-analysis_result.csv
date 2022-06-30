@@ -1,0 +1,2 @@
+function_name,combined_es,z_value,p_value,es_ci_lower,es_ci_upper,homogeneity_q_value,homogeneity_df,homogeneity_p_value,homogeneity_i_value,homogeneity_tau_value
+Reasoning ,-1.0183534100232836,-2.914877764616479,0.0035582787926617806,-1.7030943042754303,-0.33361251577113693,13.294427516717032,5,0.02077047397256356,0.6239025716817993,0.4418861722358811

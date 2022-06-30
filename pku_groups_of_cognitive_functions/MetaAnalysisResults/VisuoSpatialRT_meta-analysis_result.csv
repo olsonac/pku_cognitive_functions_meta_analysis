@@ -1,0 +1,2 @@
+function_name,combined_es,z_value,p_value,es_ci_lower,es_ci_upper,homogeneity_q_value,homogeneity_df,homogeneity_p_value,homogeneity_i_value,homogeneity_tau_value
+VisuoSpatialRT,-0.8031909605838741,-7.292198823141433,3.049366944595474e-13,-1.0190689685252918,-0.5873129526424563,8.371248096086626,9,0.497209066722422,-0.0751085019457614,0

@@ -1,0 +1,2 @@
+function_order,function_name,N_Groups,N_Measures,N_PKU,Current_Phe,N_Control,combined_es,es_ci_upper,es_ci_lower,z_value,p_value,heterogeneity_q_value,heterogeneity_df,heterogeneity_p_value,heterogeneity_i_value,heterogeneity_tau_value,Phe_coefficient,Phe_model_AIC_diff,Phe_model_p_value
+6,Naming RT,3,7,54,1025.4,60,-0.4490956654514023,0.07744824508438414,-0.9756395759871888,-1.6716769718258362,0.09458803746982045,13.487594912286854,6,0.03591422725323628,0.5551467819860045,0.14686988427362968,0.0015370031062469413,0.7839339895729349,0.09521403101868817

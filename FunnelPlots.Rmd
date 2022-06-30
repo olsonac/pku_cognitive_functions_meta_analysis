@@ -1,0 +1,206 @@
+---
+title: "Funnel plot"
+output: html_document
+classoption: landscape
+knit: (function(inputFile, encoding) { 
+      out_dir <- 'ForestPlots2';
+      rmarkdown::render(inputFile,
+                        encoding=encoding, 
+                        output_file=file.path(dirname(inputFile), out_dir, 'FunnelPlots.html')) })
+---
+
+```{r setup, echo=FALSE, include=FALSE}
+# this script runs a meta-analysis for a single function (e.g. 'Flexibility and planning')
+# NOTE:  change the "title:" above to the name of the measure you are analyzing
+#        There are some similar variables that need to be set below so labels are correct
+#        see the comment #  SET THE TASK TITLE HERE # below
+#        and the comment for the plot filename in the same region
+
+# the first time you may need to install the library 'metafor'
+# run the following line after removing the '#' then add the '#' back once you've installed the package
+# install.packages("metafor")
+
+# added heterogeneity measure and pooled effect size (was just z-stat and p-value)
+
+# load libraries 
+library(metafor)
+library(metaviz)
+library(kableExtra)
+library(tidyverse)
+library(altmeta)
+
+# set the working directory to the folder with the data
+# make this match the folder where you've put the files
+CurDir<-"~/Documents/current/PKU/pku_cog_functions_meta_analysis/May2022_meta-analysis_with_added_papers"
+ForestPlotsFolder<-"ForestPlots2"
+
+knitr::opts_knit$set(root.dir=CurDir)
+
+setwd(CurDir)
+source("ForestPlotFunctions.R")
+```
+
+```{r, echo=FALSE}
+RawData<-read.csv("DataForMetaAnalysis.csv")
+head(RawData)
+```
+
+
+```{r}
+MyData<-RawData
+```
+
+```{r}
+MyData$StudyFactor<-as.factor(MyData$StudyName)
+MyData$FunctionFactor<-as.factor(MyData$Function)
+MyData$TaskFactor<-as.factor(MyData$ShortTitle)
+MyData$ObsFactor<-interaction(MyData$StudyFactor,MyData$FunctionFactor,MyData$TaskFactor)
+```
+
+```{r}
+SelectedData<-MyData
+
+# this step does the statistical model for the meta-analysis
+# g is the effect sizes
+# Vg is the variance of the effect sizes
+# random is what describes the relationship between numbers and studies
+# 1 | StudyNum / ObsNum means that ObsNum (different for each measure) is nested
+# within StudyNum.  "1 |" is needed because this is how random intercepts are
+# described when specifying a mixed-effect model.  1 means intercept and what follows
+# the | is what the intercept is for. 1 | StudyNum / ObsNum means a random intercept for
+# ObsNum nested within StudyNum
+M1<-rma.mv(g,Vg,random = ~ 1 | StudyFactor/ FunctionFactor  ,test="z", data=SelectedData, method="REML")
+summary(M1)
+```
+
+
+```{r}
+# funnel plot with ES values plotted against number of participants because
+# of the issue that larger PKU studies may be more variable _because_ they
+# include a larger sample of the PKU population and, therefore, include more
+# people who are affected more strongly -- in any case, there isn't a transparent
+# relationship between the variance of the ES and the quality of the study's estimate of ES.
+# Bigger studies, however, should have a better estimate of ES
+OverallESEstimate <- M1$beta[[1]]
+
+FPlot<-ggplot(SelectedData,aes(x=g,y=ExpN)) +
+  geom_point(pch=21,fill="grey",size=2) + 
+  geom_vline(xintercept = OverallESEstimate, color="black") +
+  geom_vline(xintercept = 0, color="black", linetype = "dashed") +
+  xlab(expression("Weighted Glass' " ~ Delta)) + 
+  ylab("Size of PKU sample") + theme(text = element_text(size=16))
+FPlot
+```
+```{r}
+ggsave(paste0(ForestPlotsFolder,"/FunnelPlotPKU.tiff"), plot=FPlot, units="mm", width=220, height=100, dpi=300)
+```
+
+```{r}
+
+# bin the data by the number of PKU participants
+MyData$ExpN_bin<-cut(MyData$ExpN,breaks=c(0,15,20,30,50,200),labels=c(7.5,17.5,25,40,100))
+MyData$ExpN_bin_numeric <- as.numeric(as.character(MyData$ExpN_bin))
+
+CumSummary<-NULL
+BinLevels <- sort(as.numeric(as.character(levels(MyData$ExpN_bin))),decreasing=TRUE)
+for(i in seq(1,length(BinLevels))){
+  CurrentData <- MyData[MyData$ExpN_bin_numeric >= BinLevels[i],]
+  M1<-rma.mv(g,Vg,random = ~ 1 | StudyFactor/ FunctionFactor  ,test="z", data=CurrentData, method="REML")
+  Mean_g <- M1$beta[[1]]
+  # Mean_g <- mean(CurrentData$g)
+  SE_g <- M1$se[[1]]
+  N_g <- nrow(CurrentData)
+  g_ci_lb <- M1$ci.lb
+  g_ci_ub <- M1$ci.ub
+  CumRow <- data.frame(StudySize=BinLevels[i], Mean_g = Mean_g, SE_g = SE_g, N_g=N_g, ci_lb = g_ci_lb, ci_ub = g_ci_ub)
+  CumSummary <- rbind(CumSummary,CumRow)
+}
+
+# non-cumulative
+#g_summary <- MyData %>% group_by(ExpN_bin) %>% summarise(Mean_g=mean(g), SD_g=sd(g),N=n())
+#g_summary$SEMean_g <- g_summary$SD_g / sqrt(g_summary$N)
+#g_summary$ci_lb <- g_summary$Mean_g - (1.96*g_summary$SEMean_g)
+#g_summary$ci_ub <- g_summary$Mean_g + (1.96*g_summary$SEMean_g)
+#g_summary$ExpN_bin<-as.numeric(as.character(g_summary$ExpN_bin))
+
+CumSummary$StudySize[1] <- max(MyData$ExpN)
+# extend SE polygon to the top of the plot
+
+# smooth edges of ci
+Loess.lb<-loess(ci_lb ~ StudySize, data=CumSummary)
+Pred.lb<-fitted(Loess.lb)
+Loess.ub<-loess(ci_ub ~ StudySize, data=CumSummary)
+Pred.ub<-fitted(Loess.ub)
+
+# Loess.mean <- loess(Mean_g ~ StudySize, data=CumSummary)
+ES_pred_mean <- data.frame(x = CumSummary$Mean_g, y=CumSummary$StudySize)
+
+
+# for polygon
+#ESRange<-data.frame(x=c(Pred.lb[seq(nrow(CumSummary),1,-1)],
+#                         Pred.ub),
+#                    y=c(CumSummary$StudySize[seq(nrow(CumSummary),1,-1)],
+#                        CumSummary$StudySize)
+#                     )
+
+ESRange<-data.frame(x=c(Pred.lb[seq(nrow(CumSummary),1,-1)],
+                         Pred.ub),
+                    y=c(CumSummary$StudySize[seq(nrow(CumSummary),1,-1)],
+                        CumSummary$StudySize)
+                     )
+```
+
+```{r}
+
+# This plot shows the confidence interval around the effect size estimate as we add
+# smaller N studies to an accumulating sample.  These are not the control limits for
+# individual points that are often shown on funnel plots because we are not trying
+# to identify individual studies that are outside the control limits but, instead, to
+# see if there is evidence of bias in the ES estimate due to smaller studies/file drawer
+# issues
+
+FPlotBounds<-ggplot(MyData,aes(x=g,y=ExpN)) + geom_polygon(data=ESRange,aes(x=x,y=y),color="darkgrey",alpha=0.1,linetype="dashed") +
+  geom_point(pch=21,fill="grey",size=2) + 
+  geom_line(data=ES_pred_mean,aes(x=x,y=y), color="black", orientation="y") +
+  geom_vline(xintercept = 0, color="black", linetype = "dashed") +
+  xlab(expression("Weighted Glass' " ~ Delta)) + 
+  ylab("Size of PKU sample") + theme(text = element_text(size=16)) +
+  xlim(-3,2.5)
+
+# FPlotBounds<-FPlotBounds + geom_point(data=SEbyN,aes(x=MeanSEci.lb,y=ExpN),color="red")
+# FPlotBounds<-FPlotBounds + geom_smooth(data=SEbyN,aes(x=MeanSEci.lb,y=ExpN),color="darkgrey",orientation = "y",se=FALSE,linetype = "dotdash")
+# 
+# FPlotBounds<-FPlotBounds + geom_smooth(data=SEbyN,aes(x=MeanSEci.ub,y=ExpN),color="darkgrey",orientation = "y",se=FALSE,linetype="dotdash")
+print(FPlotBounds)
+```
+
+```{r}
+ggsave(paste0(ForestPlotsFolder,"/FunnelPlotByPKU_N.tiff"),plot=FPlotBounds,height=10,width=16,units="cm")
+```
+
+
+```{r}
+# needs CumResults from MetaAnalysisPKUv2_AllAndCorrelations.Rmd
+CumResults<-read.csv("CumulativeResultsDataFrame.csv")
+
+# puts ES estimated from largest studies only, then, accumulating, next largest etc.
+# The lowest point, which includes all of the studies, should match the vertical black line
+ESPlot<-FPlot
+ESPlot<-ESPlot + geom_point(data=CumResults,aes(x=ES,y=AveStudySize),color="red")
+print(ESPlot)
+```
+
+
+```{r}
+ggsave(paste0(ForestPlotsFolder,"/FunnelPlotPKU_sensitivity.tiff"), plot=ESPlot, units="mm", width=220, height=100, dpi=300)
+```
+
+
+```{r}
+# Egger's test -- add number of ppts as moderator to the model - see if slope is significant (indicates an asymmetric funnel)
+
+M2<-rma.mv(g,Vg,mods = ExpN,random = ~ 1 | StudyFactor/ FunctionFactor  ,test="z", data=MyData, method="REML")
+summary(M2)
+```
+
+No evidence of asymmetry

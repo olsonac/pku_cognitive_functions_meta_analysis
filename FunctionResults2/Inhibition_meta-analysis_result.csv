@@ -1,0 +1,2 @@
+function_order,function_name,N_Groups,N_Measures,N_PKU,Current_Phe,N_Control,combined_es,es_ci_upper,es_ci_lower,z_value,p_value,heterogeneity_q_value,heterogeneity_df,heterogeneity_p_value,heterogeneity_i_value,heterogeneity_tau_value,Phe_coefficient,Phe_model_AIC_diff,Phe_model_p_value
+3,Inhibition,10,18,166,1006.4227478991596,193,-0.12867320037653038,0.13212340937645609,-0.38946981012951687,-0.9670173195593746,0.3335353755899583,27.21427643316509,17,0.05499917276578439,0.37532787095222225,0.0704582939427051,-2.6626088033048654e-5,-1.3132294015067245,0.40726499673431243

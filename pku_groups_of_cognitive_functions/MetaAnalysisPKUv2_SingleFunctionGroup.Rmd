@@ -1,0 +1,305 @@
+---
+title: '`r paste0("Meta-analysis results for: ",FunctionTitle)`' 
+output: html_document
+classoption: landscape
+---
+
+```{r setup, echo=FALSE, include=FALSE}
+# in R script used to call .Rmd file set variables for .Rmd header
+#
+# CurName<-paste0(CurPpt,"-",TaskName,"-",ListName)
+# CurDPName<-"Onset RT" from calling R script, 
+#
+# then at the top of the .Rmd file put, e.g.:
+#
+#---
+#title: '`r paste0(CurName,"-",CurDPName)`'
+#output:
+#  pdf_document: default
+#---
+#
+# Then call using the following line in an R script: e.g.
+#rmarkdown::render(input = "src/OnePptFreqXDelay_ANOVA_MarkdownScript.Rmd", 
+#                  output_format = "word_document",
+#                  output_file = paste0(CurName,"_",CurDPName,"_ANOVA.docx"))
+
+
+# this script runs a meta-analysis for a single function (e.g. 'Flexibility and planning')
+# NOTE:  change the "title:" above to the name of the measure you are analyzing
+#        There are some similar variables that need to be set below so labels are correct
+#        see the comment #  SET THE TASK TITLE HERE # below
+#        and the comment for the plot filename in the same region
+
+# the first time you may need to install the library 'metafor'
+# run the following line after removing the '#' then add the '#' back once you've installed the package
+# install.packages("metafor")
+
+# added heterogeneity measure and pooled effect size (was just z-stat and p-value)
+
+# load libraries 
+library(metafor)
+library(metaviz)
+library(kableExtra)
+library(tidyverse)
+library(tidyr)
+library(altmeta)
+library(broom) # for writing model results
+library(htmltools)
+# library(texreg) # for writing model results
+
+# set the working directory to the folder with the data
+# make this match the folder where you've put the files
+CurDir<-"~/Documents/current/PKU/PKU_function_groups"
+knitr::opts_knit$set(root.dir=CurDir)
+
+setwd(CurDir)
+source("ForestPlotFunctions.R")
+source("DoOneForestPlot.R")
+```
+
+```{r, echo=FALSE}
+# Read in raw data
+
+RawData<-read.csv("/Users/Olsonac-admin/Documents/current/PKU/pku_cog_functions_meta_analysis/May2022_meta-analysis_with_added_papers/DataForMetaAnalysis.csv")
+head(RawData)
+```
+
+```{r}
+# read study information file which specifies which functions to analyze - 
+# says which tasks to pull from the main datafile
+GroupInfoDF <- read.csv(GroupInfoFile)
+GroupInfoDF <- GroupInfoDF[GroupInfoDF$Function != "",]
+GroupInfoDF %>% knitr::kable() %>% kable_styling()
+```
+
+```{r}
+
+GroupData<-left_join(GroupInfoDF,RawData,by=c("Function","StudyName","ShortTitle"),keep=FALSE)
+GroupData$StudyFactor <- as.factor(GroupData$StudyFactor) # to be sure these are factors
+GroupData$TaskNameFactor <- as.factor(GroupData$ShortTitle)
+
+head(GroupData)
+```
+```{r}
+# check that there are no NA after the join
+NAData<-GroupData[which(is.na(GroupData$g)),]
+NAData
+```
+
+
+```{r}
+NumMissingPhe<-length(GroupData$CurrentPhe[which(is.na(GroupData$CurrentPhe))])
+cat(sprintf("Number of studies in the set with missing Phe = %d\n",NumMissingPhe))
+cat("Mean from studies in the set will be subsituted for missing Phe.")
+GroupData$CurrentPhe[which(is.na(GroupData$CurrentPhe))]<-mean(GroupData$CurrentPhe,na.rm=TRUE)
+```
+
+```{r}
+# centre the Phe values
+GroupData$CentredPhe <- GroupData$CurrentPhe - mean(GroupData$CurrentPhe)
+```
+
+```{r}
+FunctionGroupSummary <- GroupData %>% group_by(FunctionGroup) %>% summarise(mean_g = mean(g), sd_g=sd(g), N=n())
+FunctionGroupSummary %>% knitr::kable() %>% kable_styling()
+```
+
+
+```{r}
+GroupData$FunctionGroup<-as.factor(GroupData$FunctionG)
+
+RandomTermString <- "~ 1 | StudyFactor / TaskNameFactor "
+
+GroupHetResult<-metahet(GroupData$g,GroupData$Vg)
+ISqr<-GroupHetResult$I2
+Q<-GroupHetResult$Q
+TauSqr<-GroupHetResult$tau2.DL
+
+GroupDataNO <- GroupData %>% filter(GroupData$g > -2) 
+
+M1<-rma.mv(g, # for estimates of coefficients
+           Vg,
+           random = formula(RandomTermString), 
+           test="z", 
+           data=GroupData, 
+           method="REML")
+
+M1_no_reml<-rma.mv(g, # for model comparison below
+           Vg,
+           random = formula(RandomTermString), 
+           test="z", 
+           data=GroupData,
+           method="ML")
+
+Overall_ES<-M1$beta[,1]
+Overall_se<-M1$se
+Overall_z_value<-M1$zval
+Overall_p_value<-M1$pval
+```
+
+```{r, results='asis'}
+M1 %>% tidy() %>% kable() %>% kable_styling()
+```
+
+
+```{r}
+ggplot(GroupData,aes(x=FunctionGroup,y=g)) + geom_boxplot() + geom_jitter(color="grey", alpha=0.5)
+```
+
+```{r}
+
+ContrastTitle<-paste0(unique(GroupData$FunctionGroup),collapse="_vs_")
+write.csv(tidy(M1),paste0(FunctionResultsFolder,"/",ContrastTitle,"_single_function.csv"))
+write.csv(glance(M1),paste0(FunctionResultsFolder,"/",ContrastTitle,"_single_function_details.csv"))
+
+```
+
+```{r}
+WtMatrix<-weights(M1,type="matrix")
+WtRowSum<-apply(WtMatrix,1,sum)
+GroupData$Weights<-WtRowSum/sum(WtRowSum)
+```
+
+
+```{r}
+WtMeanSummary <- GroupData %>% group_by(FunctionGroup) %>% summarise(WtMean = sum(g*(Weights/sum(Weights))))
+WtMeanSummary %>% kable() %>% kable_styling()
+```
+### Weighted means
+
+```{r}
+MyP2 <- ggplot(GroupData,aes(x=g, y=seq(1,length(g)), size=Weights, color=FunctionGroup)) + geom_point(shape=1)
+MyP2 <- MyP2 + geom_vline(data=WtMeanSummary, aes(xintercept = WtMean, color=FunctionGroup))
+MyP2 <- MyP2 + ggtitle("Effect sizes weighted by variance")
+MyP2
+```
+
+```{r}
+M2<-rma.mv(g,
+           Vg,
+           random = formula(RandomTermString), 
+           mods = ~ CentredPhe,
+           test="z", 
+           data=GroupData, 
+           method="REML"
+           )
+
+M2_no_reml<-rma.mv(g, # for model comparison
+           Vg,
+           random = formula(RandomTermString), 
+           mods = ~ CentredPhe,
+           test="z", 
+           data=GroupData,
+           method="ML"
+           )
+
+ContrastTitle<-paste0(unique(GroupData$FunctionGroup),collapse="_vs_")
+write.csv(tidy(M2),paste0(FunctionResultsFolder,"/",ContrastTitle,"_single_function_main_effect_of Phe.csv"))
+write.csv(glance(M2),paste0(FunctionResultsFolder,"/",ContrastTitle,"_single_function_with_main_effect_of_Phe_details.csv"))
+
+M2 %>% tidy() %>% 
+  kable() %>% 
+  kable_styling() 
+```
+No effect of Phe
+
+```{r}
+AIC(M1_no_reml,M2_no_reml)
+```
+
+```{r}
+# compare no current Phe model to model with a main effect of Phe and function group
+anova(M1_no_reml,M2_no_reml)
+```
+
+
+
+##  Individual function group results
+
+```{r, results='asis'}
+# copy PKUData into a data frame called 'MyData'
+# this seems unnecessary, but will help if we wanted to adapt this to some new non-PKU dataset
+# later
+
+GroupNames <- sort(unique(GroupInfoDF$FunctionGroup))
+for (i in seq(1,length(GroupNames))){
+  CurrentGroup <- GroupNames[i]
+  if(i == 1){
+    Current_ES <- Overall_ES[1] # Overall model intercept is ES for first category
+  }else{
+    Current_ES <- Overall_ES[1] + Overall_ES[i] # Overall model intercept + coefficient 
+                                                # is ES for subsequent categories
+  }
+  Current_se <- Overall_se[i]
+  Current_z_value <- Overall_z_value[i]
+  Current_p_value <- Overall_p_value[i]
+  CurrentStudies <- GroupInfoDF[GroupInfoDF$FunctionGroup == CurrentGroup,]
+  CurrentData<-left_join(CurrentStudies,GroupData,
+                      by=c("Function","StudyName","ShortTitle","FunctionGroup"),
+                      keep=FALSE)
+
+  PlotFilename<-paste0(ForestPlotsFolder,"/",CurrentGroup,".tiff")
+  
+  HetResult<-metahet(CurrentData$g,CurrentData$Vg)
+  ISqr<-HetResult$I2
+  Q<-HetResult$Q
+  TauSqr<-HetResult$tau2.DL
+  
+  M1 <- DoOneManualForestPlot(CurrentData,RandomTermString, CurrentGroup,
+                              CurrentData$g, CurrentData$Vg, 
+                              Current_ES, Current_se, 
+                              Current_z_value,Current_p_value,
+                                PlotFilename,UsePlotRangeDefaults,UsePlotPercentDefaults)
+  
+  
+
+  combined_es = M1$beta[[1]]
+  es_z_value = M1$zval[[1]]
+  es_p_value = M1$pval[[1]]
+  ci_lower = M1$ci.lb[[1]]
+  ci_upper = M1$ci.ub[[1]]
+  q_df = M1$k-1
+  q_value = M1$QE[[1]]
+  q_p_value = M1$QEp[[1]]
+  i_squared = ISqr
+  tau_squared = TauSqr
+
+  meta_result_df = tibble(function_name = CurrentGroup,
+                          combined_es = combined_es,
+                          z_value = es_z_value,
+                          p_value = es_p_value,
+                          es_ci_lower = ci_lower,
+                          es_ci_upper = ci_upper,
+                          homogeneity_q_value = q_value,
+                          homogeneity_df = q_df,
+                          homogeneity_p_value = q_p_value,
+                          homogeneity_i_value = i_squared,
+                          homogeneity_tau_value = tau_squared)
+  result_filename = paste0(FunctionResultsFolder,"/",CurrentGroup,"_meta-analysis_result.csv")
+  write_csv(meta_result_df,result_filename,append=FALSE)
+}
+```
+
+
+
+```{r, results='asis'}
+# awkward repetition, but can't  get ggplot and kable output together
+
+for (CurrentGroup in unique(GroupInfoDF$FunctionGroup)){
+  CurrentStudies <- GroupInfoDF[GroupInfoDF$FunctionGroup == CurrentGroup,]
+  CurrentData<-left_join(CurrentStudies,GroupData,
+                      by=c("Function","StudyName","ShortTitle","FunctionGroup"),
+                      keep=FALSE)
+
+  M5<-rma.mv(g,Vg,random = formula(RandomTermString),
+             test="z", mods= ~ CentredPhe, 
+             data=CurrentData, method="REML",
+             control=list(optimizer="optim", optmethod="BFGS"))
+  cat('<br>\n')
+  M5 %>% tidy() %>% kable(caption=CurrentGroup) %>% 
+    kable_styling() %>% 
+    htmltools::HTML() %>%
+    print
+  cat("\n")
+}
+```

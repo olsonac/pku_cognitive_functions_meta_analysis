@@ -1,0 +1,76 @@
+﻿Function,StudyName,ShortTitle,FunctionGroup
+Flexibility,Channon et al 2005,Object Alternation-% correct,accuracy
+Flexibility,Channon et al 2005,Object Alternation-Speed,reaction time
+Flexibility,Channon et al 2007,Object Alternation-% correct,accuracy
+Flexibility,Channon et al 2007,Object Alternation-Speed,reaction time
+Higher Language Skills,De Felice et al 2018,Appreciation of Humour-N err,accuracy
+Higher Language Skills,De Felice et al 2018,Appreciation of Humour-Time,reaction time
+Higher Language Skills,De Felice et al 2018,Inferred meaning - N err,accuracy
+Higher Language Skills,De Felice et al 2018,Inferred meaning - Time ,reaction time
+Higher Language Skills,De Felice et al 2018,Metaphor Picture  - N err,accuracy
+Higher Language Skills,De Felice et al 2018,Metaphor Picture  - Time,reaction time
+Inhibition,Channon et al 2005 on diet,"Flanker Task, Inc-comp-Speed ",reaction time
+Inhibition,Channon et al 2005 on diet,"Flanker Task, on diet, Comp-inc-N correct",accuracy
+Inhibition,Channon et al 2007 off diet,"Flanker Task, Inc-comp Speed ",reaction time
+Inhibition,De Felice et al 2018,Hayling Sentence Completion B-N err,accuracy
+Inhibition,De Felice et al 2018,Hayling Sentence Completion B-Time ,reaction time
+Inhibition,Palermo et al 2017,Continuous Naming -  5th-1st pos-RT,reaction time
+Inhibition,Palermo et al 2017,Continuous Naming - 5th-1st pos-% err,accuracy
+Inhibition,Palermo et al 2017,"Stroop, Incongruous-congruous - % err",accuracy
+Inhibition,Palermo et al 2017,"Stroop, Incongruous-congruous- RT",reaction time
+Inhibition,Sundermann et al 2020,Go-No go cor RT,reaction time
+Inhibition,Sundermann et al 2020,Go-No go Err,accuracy
+Language Accuracy,De Felice et al 2018,Block Cyclic Naming 1st cycle - % err,accuracy
+Language Accuracy,Palermo et al 2017,Colour Naming - % err,accuracy
+Language Accuracy,Palermo et al 2017,Continuous Picture Naming - % err,accuracy
+Language Accuracy,Palermo et al 2017,Non-word reading - % err,accuracy
+Language Accuracy,Palermo et al 2017,Word Reading - % err,accuracy
+Naming RT,De Felice et al 2018,Block Cyclic Naming-RT,reaction time
+Naming RT,Palermo et al 2017,Colour Naming-RT,reaction time
+Naming RT,Palermo et al 2017,Continuous Picture Naming-RT ,reaction time
+Naming RT,Palermo et al 2017,Non-word reading-RT,reaction time
+Naming RT,Palermo et al 2017,Word Reading-RT,reaction time
+Social Cognition,Jahja et al 2016,ANT Facial Recognition  - % err,accuracy
+Social Cognition,Jahja et al 2016,ANT Facial Recognition-RT,reaction time
+Social Cognition,Jahja et al 2016,ANT identification of facial emotions-% err,accuracy
+Social Cognition,Jahja et al 2016,ANT identification of facial emotions-RT,reaction time
+Social Cognition,Palermo et al 2020,3 Face Test - Accuracy - N correct,accuracy
+Social Cognition,Palermo et al 2020,3 Face Test - Time ,reaction time
+Social Cognition,Palermo et al 2020,Affect Selection - N correct,accuracy
+Social Cognition,Palermo et al 2020,Affect Selection - Time ,reaction time
+Sustained attention,Jahja et al 2017,Dots task - N err,accuracy
+Sustained attention,Jahja et al 2017,Dots task - Series time,reaction time
+Sustained attention,Schmidt et al 1994,Dot pattern exercise t1 - N err,accuracy
+Sustained attention,Schmidt et al 1994,Dot pattern exercise t1 - RT,reaction time
+Verbal STM/WM,Abgottspon et al. ,3 back - correct,accuracy
+Verbal STM/WM,Abgottspon et al. ,4 back - speed ,reaction time
+Verbal STM/WM,Channon et al 2007,"0,1,2 back - % cor",accuracy
+Verbal STM/WM,Channon et al 2007,"0,1,2 back - Speed",reaction time
+Visual spatial attention RT,Jahja et al 2017,Memory search-high load-RT,reaction time
+Visual spatial attention RT,Jahja et al 2017,Memory search-low load-RT,reaction time
+Visual spatial attention RT,Palermo et al 2017,Choice detection - RT,reaction time
+Visual spatial attention RT,Palermo et al 2017,Conjoined search - RT,reaction time
+Visual spatial attention RT,Palermo et al 2017,Detection w/distractors - RT,reaction time
+Visual spatial attention RT,Palermo et al 2017,Feature search - RT,reaction time
+Visual spatial attention RT,Romani et al 2020,Conjoined search - RT,reaction time
+Visual spatial attention RT,Romani et al 2020,Detection w/distractors - RT,reaction time
+Visual spatial attention RT,Romani et al 2020,Feature search - RT,reaction time
+Visual STM,Jahja et al 2017,Feature integration-N err,accuracy
+Visual STM,Jahja et al 2017,Feature integration-RT,reaction time
+Visuo-spatial attention acc,Jahja et al 2017,Memory search-high load - N err,accuracy
+Visuo-spatial attention acc,Jahja et al 2017,Memory search-low load - N err,accuracy
+Visuo-spatial attention acc,Palermo et al 2017,Choice detection- % err,accuracy
+Visuo-spatial attention acc,Palermo et al 2017,Conjunction search - % err,accuracy
+Visuo-spatial attention acc,Palermo et al 2017,Detection w/distractors - % err,accuracy
+Visuo-spatial attention acc,Palermo et al 2017,Feature search - % err,accuracy
+Visuo-spatial attention acc,Romani et al 2020,Conjunction search - % err,accuracy
+Visuo-spatial attention acc,Romani et al 2020,Detection w/distractors - % err,accuracy
+Visuo-spatial attention acc,Romani et al 2020,Feature search - % err,accuracy
+Visuo-spatial skills,Channon et al 2005,PJT-function match-% cor,accuracy
+Visuo-spatial skills,Channon et al 2005,PJT-function match-speed,reaction time
+Visuo-spatial skills,Channon et al 2005,PJT-shape match-% cor,accuracy
+Visuo-spatial skills,Channon et al 2005,PJT-shape match-speed,reaction time
+Visuo-spatial skills,Channon et al 2007,PJT-function match-% cor,accuracy
+Visuo-spatial skills,Channon et al 2007,PJT-function match-speed,reaction time
+Visuo-spatial skills,Channon et al 2007,PJT-shape match-% cor,accuracy
+Visuo-spatial skills,Channon et al 2007,PJT-shape match-speed,reaction time

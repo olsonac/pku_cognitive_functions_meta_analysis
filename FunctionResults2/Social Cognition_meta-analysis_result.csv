@@ -1,0 +1,2 @@
+function_order,function_name,N_Groups,N_Measures,N_PKU,Current_Phe,N_Control,combined_es,es_ci_upper,es_ci_lower,z_value,p_value,heterogeneity_q_value,heterogeneity_df,heterogeneity_p_value,heterogeneity_i_value,heterogeneity_tau_value,Phe_coefficient,Phe_model_AIC_diff,Phe_model_p_value
+19,Social cognition,4,16,98,859.5,122,-0.4241934122877006,-0.18583275184440104,-0.6625540727310001,-3.4880076645903366,4.866341287835891e-4,16.87962075933172,15,0.32611149920224575,0.11135444250384537,0.008664145690520835,-4.305180660485691e-4,-0.42984334595925233,0.21018426520645875

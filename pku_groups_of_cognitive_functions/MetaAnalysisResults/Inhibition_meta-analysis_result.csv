@@ -1,0 +1,2 @@
+function_name,combined_es,z_value,p_value,es_ci_lower,es_ci_upper,homogeneity_q_value,homogeneity_df,homogeneity_p_value,homogeneity_i_value,homogeneity_tau_value
+Inhibition,-0.1639503409888002,-0.9089428705962613,0.36338028268753575,-0.5174783502687611,0.18957766829116066,11.474301639168555,7,0.11922667020258912,0.3899410857297952,0.07753047932027617

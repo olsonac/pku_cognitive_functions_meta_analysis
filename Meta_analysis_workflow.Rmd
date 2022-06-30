@@ -1,0 +1,96 @@
+---
+title: "meta_analysis_workflow"
+author: "Andrew Olson"
+date: "10/05/2022"
+output: html_document
+---
+
+## Data analysis workflow for Meta-analyses of cognitive functions in early-treated adults with phenylketonuria
+
+Materials were located here: ~/Documents/current/PKU/pku_cog_functions_meta_analysis/May2022_meta-analysis_with_added_papers
+
+#### Data organization
+
+Starting data was: RAW DATA for META-ANALYSIS_June2022.csv
+This, in turn, is a .csv copy of the worksheet "ES final selection" from:
+
+xx - INPUT DATA for META-ANALYSIS added papers 6.xlsx (6 has updated graphs, but data are same as 4)
+xx -INPUT DATA for META-ANALYSIS added papers 6b.xlsx has checked data for acc/rt comparison -
+tick - INPUT DATA for META-ANALYSIS added papers 7.xlsx has corrected Phe values for Ris and Schmidt
+
+we will extract this from the general, overall data and compare the acc/rt extracted data to the acc/rt-specific worksheet from the .xlsx file
+
+Forest plot functions were from: ForestPlotFunctions.R
+Columns in original data were renamed using: ColumnNames.csv
+The translation of study names to study factors (identifying studies that depended on 
+the same participants) was based on: StudyNameStudyFactor.csv
+
+Effect size measures (g) and variance of effect sizes (Vg) were calculated using
+# https://www.jepusto.com/alternative-formulas-for-the-smd/
+
+Initial calculations for g and Vg (needed by metafor for the random effects modelling) was
+carried out by RawDataToDataForAnalysis.Rmd
+
+RawDataToDataForAnalysis.Rmd writes the file: DataForMetaAnalysis.csv
+This is used for the rest of the analyses
+
+#### Overall summary information
+
+The summary information about participants, studies and measures is produced by:
+MetaAnalysisPKUv2_RawDataSummaryInformation.Rmd
+
+#### Meta-analysis of individual cognitive functions
+
+Analysis of individual functions is done by
+MetaAnalysisPKUv2_OneFunction.Rmd
+
+All functions are processed by calling MetaAnalysisPKUv2_OneFunction.Rmd from 
+MetaAnalysisPKU_CallFunctionScript.R
+
+Parameters for plots can be adjusted from defaults by using, e.g.:
+
+UsePlotPercentDefaults <- 0
+# different parts of the forest plot
+PlotPercentage<- .35  # percentage of space devoted to forest plot (vs text)
+StudyNamePercent<-0.25 # percent of _text_ area for study name
+MeanPercent<-0.09 # width of columns for means - % of total _text_ area
+SDPercent<-0.065 # width of column for SD
+NPercent<-0.04 # width of column for N
+WtPercent<-0.04
+
+UsePlotRangeDefaults <- 0
+MinES<- -7 
+MaxES<- 2
+
+To use defaults set: 
+UsePlotPercentDefaults <- 1
+UsePlotRangeDefaults <- 1
+
+#### Weighting
+
+Weight was changed from the default (which would be to weight by Vg) to use the number of PKU participants.
+In some samples with small numbers variances can be small and then these assume inordinate influence with Vg weighting.
+Weighting by the number of PKU participants puts more emphasis on results from larger samples, which should be more representative of the PKU population.
+
+
+#### Cumulative outcomes
+
+Analysis of outcomes across individual functions (but not including IQ), cumulative effect size and correlations with Phe, age and year are computed using:
+MetaAnalysisPKU_AllAndCorrelations.Rmd
+
+This is run using:
+RunAllAndCorrelations.R
+to set the output filename and location (in FunctionResults)
+
+This produces an overall effect size estimate, correlations with Phe, age and year and a profile plot of effect size as studies are added from the largest to smallest studies (to check for small study bias)
+
+#### Comparing accuracy and RT
+
+Accuracy and RT are compared using
+MetaAnalysisPKUv2_AccRTComparison.Rmd
+
+This is run by
+RunAccuracyRTComparison.R
+in order to set the output location and name of the html report (located in FunctionResults)
+
+

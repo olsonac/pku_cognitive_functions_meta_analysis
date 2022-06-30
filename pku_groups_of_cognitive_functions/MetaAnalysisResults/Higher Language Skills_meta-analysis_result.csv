@@ -1,0 +1,2 @@
+function_name,combined_es,z_value,p_value,es_ci_lower,es_ci_upper,homogeneity_q_value,homogeneity_df,homogeneity_p_value,homogeneity_i_value,homogeneity_tau_value
+Higher Language Skills,-0.22457005020249038,-1.5775201584898986,0.11467588743310016,-0.5035834168681637,0.054443316463182845,25.205005907315456,10,0.004970171902422314,0.6032534157392275,0.12603231334861162

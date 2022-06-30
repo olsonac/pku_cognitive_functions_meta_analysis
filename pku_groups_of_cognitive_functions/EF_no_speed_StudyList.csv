@@ -1,0 +1,48 @@
+﻿Function,StudyName,ShortTitle,FunctionGroup
+Flexibility,Aitkenhead et al 2021,Digit/symbol coding,EF_no_speed
+Flexibility,Aitkenhead et al 2021,DKefs Card Sorting,EF_no_speed
+Flexibility,Aitkenhead et al 2021,Letter fluency,EF_no_speed
+Flexibility,Aitkenhead et al 2021,Semantic fluency,EF_no_speed
+Flexibility,Channon et al 2004,Letter fluency,EF_no_speed
+Flexibility,Channon et al 2005,Object Alternation-% correct,EF_no_speed
+Flexibility,Channon et al 2007,Object Alternation-% correct,EF_no_speed
+Flexibility,Moyle et al 2007,Letter fluency,EF_no_speed
+Flexibility,Moyle et al 2007,Semantic fluency,EF_no_speed
+Flexibility,Nardecchia et al 2015,WCST- N perseverations,EF_no_speed
+Flexibility,Palermo et al 2017,Digit/symbol - % err,EF_no_speed
+Flexibility,Palermo et al 2017,Letter fluency ,EF_no_speed
+Flexibility,Palermo et al 2017,Semantic fluency ,EF_no_speed
+Flexibility,Palermo et al 2017,WCST- N categories - correct,EF_no_speed
+Flexibility,Palermo et al 2017,WCST- N perseverations,EF_no_speed
+Flexibility,Pilotto et al 2021,Letter fluency,EF_no_speed
+Flexibility,Pilotto et al 2021,Semantic fluency,EF_no_speed
+Flexibility,Ris et al 1994,WCST- N perseverations,EF_no_speed
+Flexibility,Romani et al 2020,Digit/symbol - % err,EF_no_speed
+Flexibility,Romani et al 2020,Letter fluency ,EF_no_speed
+Flexibility,Romani et al 2020,Semantic fluency ,EF_no_speed
+Flexibility,Romani et al 2020,WCST- N categories - correct,EF_no_speed
+Flexibility,Romani et al 2020,WCST- N perseverations,EF_no_speed
+Flexibility,Smith et al 1996 - High Phe,WCST- N categories-correct,EF_no_speed
+Flexibility,Smith et al 1996 - High Phe,WCST- N perseverations,EF_no_speed
+Flexibility,Smith et al 1996 - Low Phe,WCST- N categories-correct,EF_no_speed
+Flexibility,Smith et al 1996 - Low Phe,WCST- N perseverations,EF_no_speed
+Inhibition,Channon et al 2004,Hayling Sentence Completion B - cor/sec.,EF_no_speed
+Inhibition,Channon et al 2005 on diet,"Flanker Task, on diet, Comp-inc-N correct",EF_no_speed
+Inhibition,De Felice et al 2018,Hayling Sentence Completion B-N err,EF_no_speed
+Inhibition,Moyle et al 2007,Go-No go false alarms ,EF_no_speed
+Inhibition,Palermo et al 2017,Continuous Naming - 5th-1st pos-% err,EF_no_speed
+Inhibition,Palermo et al 2017,"Stroop, Incongruous-congruous - % err",EF_no_speed
+Inhibition,Sundermann et al 2020,Go-No go Err,EF_no_speed
+Inhibition,Ulrich et al. 1996,Colour Word Interference Task,EF_no_speed
+Reasoning ,Channon et al 2004,Brixton scaled - Score,EF_no_speed
+Reasoning ,Channon et al 2004,Six elements - Rules per minute,EF_no_speed
+Reasoning ,Nardecchia et al 2015,Elithorns - N solved trials,EF_no_speed
+Reasoning ,Nardecchia et al 2015,Tower of London - Score,EF_no_speed
+Reasoning ,Palermo et al 2017,Tower of Hanoi - % of unsolved trials ,EF_no_speed
+Reasoning ,Pilotto et al 2021,Tower of London - Score,EF_no_speed
+Sustained attention,Jahja et al 2017,Dots task - N err,EF_no_speed
+Sustained attention,Jahja et al 2017,Dots task - Series time,EF_no_speed
+Sustained attention,Palermo et al 2017,Rapid Visual Processing - % err,EF_no_speed
+Sustained attention,Romani et al 2020,Rapid Visual Processing - % err,EF_no_speed
+Sustained attention,Schmidt et al 1994,Dot pattern exercise t1 - N err,EF_no_speed
+Sustained attention,Weglage et al 2013,D2 Test - N correct; baseline,EF_no_speed

@@ -1,0 +1,729 @@
+---
+title: "All measures and correlations (Phe, age, year) "
+output: html_document
+knit: (function(inputFile, encoding) { 
+      out_dir <- 'FunctionResults2';
+      rmarkdown::render(inputFile,
+                        encoding=encoding, 
+                        output_file=file.path(dirname(inputFile), out_dir, 'AllAndCorrelationAnalysis.html')) })
+---
+
+```{r setup, echo=FALSE, include=FALSE}
+# this script runs a meta-analysis for a single function (e.g. 'Flexibility and planning')
+# NOTE:  change the "title:" above to the name of the measure you are analyzing
+#        There are some similar variables that need to be set below so labels are correct
+#        see the comment #  SET THE TASK TITLE HERE # below
+#        and the comment for the plot filename in the same region
+
+# the first time you may need to install the library 'metafor'
+# run the following line after removing the '#' then add the '#' back once you've installed the package
+# install.packages("metafor")
+
+# added heterogeneity measure and pooled effect size (was just z-stat and p-value)
+
+rm(list = ls()) # clear global environment
+
+# load libraries 
+library(metafor)
+library(metaviz)
+library(kableExtra)
+library(tidyverse)
+library(altmeta)
+
+# set the working directory to the folder with the data
+# make this match the folder where you've put the files
+CurDir<-"~/Documents/current/PKU/pku_cog_functions_meta_analysis/May2022_meta-analysis_with_added_papers"
+FunctionResultsFolder<-paste0(CurDir,"/FunctionResults2")
+ForestPlotsFolder<-paste0(CurDir,"/ForestPlots2")
+
+knitr::opts_knit$set(root.dir=CurDir)
+
+setwd(CurDir)
+source("ForestPlotFunctions.R")
+```
+
+```{r, echo=FALSE}
+# Read in raw data
+
+RawData<-read.csv("DataForMetaAnalysis.csv")
+print(sprintf("length of raw data: %d",length(RawData[,1])))
+```
+
+```{r}
+RawData<-RawData[!is.na(RawData$g),]
+print(sprintf("length of raw data: %d",length(RawData[,1])))
+
+RawData$StudyNameFactor<-as.factor(RawData$StudyName)
+RawData$FunctionFactor<-as.factor(RawData$Function)
+RawData$TaskNameFactor2<-as.factor(paste0(as.character(RawData$StudyName),"_",as.character(RawData$ShortTitle)))
+RawData$TaskNameFactor<-as.factor(as.character(RawData$ShortTitle))
+RawData$StudyFactor <- as.factor(RawData$StudyFactor)
+
+head(RawData)
+```
+```{r}
+AgeSummary <- RawData %>% group_by(Age) %>% summarise(N=n())
+AgeSummary
+```
+
+
+```{r}
+TaskSummary <- RawData %>% group_by(Function,TaskNameFactor) %>% summarise(N=n())
+TaskSummary %>% kable() %>% kable_styling()
+```
+
+
+```{r}
+
+####################### SET THE OUTPUT FILENAME FOR THE PLOT HERE ##################
+TaskFilename<-"AllMeasures_noIQ"  # change the label here to match the data -- this will be used to label the plot file output.
+MyData<-RawData
+```
+
+```{r}
+NonIQData<-MyData[MyData$Function != "IQ",] 
+IQData<-MyData[MyData$Function == "IQ",]
+# don't include IQ -- data for IQ is separate
+# this step does the statistical model for the meta-analysis
+# g is the effect sizes
+# Vg is the variance of the effect sizes
+# random is what describes the relationship between numbers and studies
+# 1 | StudyNum / ObsNum means that ObsNum (different for each measure) is nested
+# within StudyNum.  "1 |" is needed because this is how random intercepts are
+# described when specifying a mixed-effect model.  1 means intercept and what follows
+# the | is what the intercept is for. 1 | StudyNum / ObsNum means a random intercept for
+# ObsNum nested within StudyNum
+
+HetResult<-metahet(NonIQData$g,NonIQData$Vg)
+ISqr<-HetResult$I2
+Q<-HetResult$Q
+TauSqr<-HetResult$tau2.DL
+
+RandomTermString = "~ 1 |  StudyFactor/ TaskNameFactor"
+
+# ES estimate for all measures, excluding IQ
+M1<-rma.mv(g,Vg,random = formula(RandomTermString)  ,test="z", data=NonIQData, method="REML")
+summary(M1)
+```
+
+```{r}
+WtMatrix<-weights(M1,type="matrix")
+WtRowSum<-apply(WtMatrix,1,sum)
+NonIQData$Weights<-WtRowSum/sum(WtRowSum)
+
+# check
+NonIQData$gWt<-NonIQData$Weights * NonIQData$g
+sum(NonIQData$gWt) # should be the same as M1$beta from above (note -- M1)
+```
+
+
+```{r}
+# put study information in a table for the plot
+# %>% rename("PKU Mean"=ExpMean, "PKU SD"=ExpSD, "PKU N"=ExpN, "Control mean" = ControlMean, "Control SD" = ControlSD, "Control N" = ControlN, "Glass delta" = SMD)
+PlotTableRaw <- NonIQData %>% select(StudyName, ShortTitle, ExpMean, ExpSD, ExpN, ControlMean, ControlSD, ControlN, Weights)
+PlotTableRaw<-PlotTableRaw[order(PlotTableRaw$StudyName),]
+PTable<-data.frame(
+  StudyName=sprintf("%s",PlotTableRaw$StudyName),
+  MeasureName=sprintf("%s",PlotTableRaw$ShortTitle),
+  ExpMean=sprintf("%6.2f",PlotTableRaw$ExpMean),
+  ExpSD=sprintf("%6.2f", PlotTableRaw$ExpSD),
+  ExpN=sprintf("%3d",PlotTableRaw$ExpN),
+  ControlMean=sprintf("%6.2f",PlotTableRaw$ControlMean),
+  ControlSD=sprintf("%6.2f", PlotTableRaw$ControlSD),
+  ControlN=sprintf("%3d",PlotTableRaw$ControlN),
+  Weight=sprintf("%.1f",PlotTableRaw$Weights*100)
+  )
+# print(PTable)
+```
+
+```{r}
+MinES<- -3 # manual limits
+MaxES<- 2
+
+PlotPercentage<- .4  # percentage of space devoted to forest plot (vs text)
+StudyNamePercent<-0.2 # percent of _text_ area for study name
+MeanPercent<-0.08 # width of columns for means - % of total _text_ area
+SDPercent<-0.06 # width of column for SD
+NPercent<-0.04 # width of column for N
+WtPercent<-0.06
+
+LittleSep<-0.003 # separation between columns in a group (% of _text_ area)
+BigSep<-0.007 # separation between columns in different groups (% of _text_ area)
+TextMargin<-0.02 # space between text and plot (% of text area)
+
+ColumnSep<-c(LittleSep,LittleSep,LittleSep,LittleSep,BigSep,LittleSep,LittleSep,LittleSep)
+ColumnWidths<-c(MeanPercent,SDPercent,NPercent,MeanPercent,SDPercent,NPercent,WtPercent)
+MeasureWidth<-(1-TextMargin)-(sum(ColumnSep)+sum(ColumnWidths)+StudyNamePercent)
+if(MeasureWidth < 0){
+  c("******WARNING***** space for Measure is too small ************")
+}
+ColumnWidths<-c(MeasureWidth,ColumnWidths)
+ColumnAlign<-c(4,2,2,2,2,2,2,2) # first is left aligned, others centered
+HeaderAlign<-c(1,1,1,1,1,1,1,1) # center headers
+
+ColumnPositionPercentages<-InterleaveSepsAndWidths(ColumnSep,ColumnWidths,ColumnAlign)
+ColumnPositionPercentages<-ColumnPositionPercentages+StudyNamePercent
+
+HeaderPositionPercentages<-InterleaveSepsAndWidths(ColumnSep,ColumnWidths,HeaderAlign)
+HeaderPositionPercentages<-HeaderPositionPercentages+StudyNamePercent
+
+HeaderLine1<-c("Measure","Mean","SD","N","Mean","SD","N","% Wt")
+HeaderLine2<-c("","","PKU","","","Control","")
+AxisTitle<-"PKU worse        Effect size        PKU better"
+MeasureTitle<-"Flexibility and planning"
+
+HeteroString<-sprintf("Heterogeneity: Q(%2d) = %3.2f, p<%0.2f, I-squared = %0.3f, Tau-squared = %0.3f", M1$k-1, M1$QE, M1$QEp, ISqr, TauSqr)
+
+PlotFilename<-paste0(ForestPlotsFolder,"/",TaskFilename,".tiff")
+
+# plot of ES estimate for all functions, excluding IQ
+MetaModel<-M1
+TextDF<-PTable
+MyCex<-0.94
+TaskTitle<-"All functions"
+
+ForestPlotWithSummary(TaskTitle,PlotFilename,MetaModel,PlotPercentage,StudyNamePercent,TextDF,ColumnPositionPercentages,ColumnAlign,HeaderPositionPercentages,HeaderLine1,HeaderLine2,MyCex,AxisTitle,HeteroString,MinES,MaxES)
+```
+```{r}
+# only IQ
+
+# ES estimate for IQ
+M_IQ_only<-rma.mv(g,Vg,random = formula(RandomTermString),test="z", data=IQData, method="REML")
+summary(M_IQ_only)
+```
+
+
+```{r}
+# All data, including IQ
+
+# ES estimate for all measures, including IQ
+M2<-rma.mv(g,Vg,random = formula(RandomTermString),test="z", data=MyData, method="REML")
+summary(M2)
+```
+
+```{r}
+# Egger's test - if term for ExpN is significant, there is asymmetry
+
+EggerM<-rma.mv(g,Vg,random = formula(RandomTermString),mods = ExpN, test="z", data=MyData, method="REML")
+summary(EggerM)
+```
+
+No significant influence of N on the estimate of effect size, so no evidence of
+bias from unpublished, non-significant, smaller-N studies (at least based on this measure)
+
+
+```{r}
+# replace lines without Phe with Phe mean-- keeps IQ
+
+MyData$CenteredPhe<-MyData$CurrentPhe-mean(MyData$CurrentPhe,na.rm=TRUE)
+MyData$CenteredAge<-MyData$Age-mean(MyData$Age,na.rm=TRUE)
+MyData$CenteredYear<-MyData$Year-mean(MyData$Year,na.rm=TRUE)
+
+PheData<-MyData
+print(sprintf("Number of missing Phe values: %d",length(MyData[which(is.na(MyData$CurrentPhe)),1])))
+
+# replace missing Phe with Phe mean
+PheData$CenteredPhe[which(is.na(PheData$CenteredPhe))]<-mean(PheData$CenteredPhe,na.rm=TRUE)
+PheData$CurrentPhe[which(is.na(PheData$CurrentPhe))]<-mean(PheData$CurrentPhe,na.rm=TRUE)
+```
+
+```{r}
+# Does Phe have an influence?
+# REML models for estimates of coefficients
+# non-REML models for model comparisons
+
+M3Phe<-rma.mv(g,Vg,random = formula(RandomTermString), mods= ~ CenteredPhe,test="z", data=PheData, method="REML")
+M3PheNoREML<-rma.mv(g,Vg,random = formula(RandomTermString), mods= ~ CenteredPhe,test="z", data=PheData, method="ML")
+summary(M3Phe)
+```
+
+```{r}
+M3NoPhe<-rma.mv(g,Vg,random = formula(RandomTermString), test="z", data=PheData, method="REML")
+M3NoPheNoREML<-rma.mv(g,Vg,random = formula(RandomTermString), test="z", data=PheData, method="ML")
+summary(M3NoPhe)
+```
+
+```{r}
+AIC(M3PheNoREML,M3NoPheNoREML)
+```
+
+```{r}
+anova(M3NoPheNoREML,M3PheNoREML)
+```
+
+When comparing models with and without Phe, model with Phe is better p=0.05
+
+```{r}
+PhePlot<-ggplot(PheData,aes(x=CenteredPhe,y=g))+geom_point() + geom_smooth(method="lm")
+PhePlot
+```
+```{r}
+ggsave(paste0(ForestPlotsFolder,"/OverallPheEffect.tiff"),plot=PhePlot,height=10,width=16,units = "cm")
+```
+
+
+```{r}
+# remove lines without Year
+YearData<-PheData[!is.na(PheData$Year),]
+print(sprintf("removed %d studies without an 'Year' or 'Phe' value. %d studies remaining.\n",nrow(MyData)-nrow(YearData),nrow(YearData)))
+```
+
+```{r}
+MYNoMods<-rma.mv(g,Vg,random = formula(RandomTermString),test="z", data=YearData, method="ML")
+MYYearOnly <-rma.mv(g,Vg,random = formula(RandomTermString), 
+                    mods= ~ CenteredYear,test="z", data=YearData, method="ML")
+# Does year of study have an influence? - model with Phe and year
+MYPheAndYear<-rma.mv(g,Vg,random = formula(RandomTermString), mods= ~ CenteredPhe + CenteredYear,test="z", data=YearData, method="ML")
+MYPheYearInter<-rma.mv(g,Vg,random = formula(RandomTermString), mods= ~ CenteredPhe*CenteredYear,test="z", data=YearData, method="ML")
+print(MYYearOnly) %>% kable() %>% kable_styling()
+print(MYPheAndYear) %>% kable() %>% kable_styling()
+print(MYPheYearInter) %>% kable() %>% kable_styling()
+```
+
+
+```{r}
+# Does Phe have an influence on its own in Year data?
+MYPheOnly<-rma.mv(g,Vg,random = formula(RandomTermString), mods= ~ CenteredPhe,test="z", data=YearData, method="ML")
+print(MYPheOnly) %>% kable() %>% kable_styling()
+```
+```{r}
+# explore interaction
+Pre2005<-YearData[YearData$Year < 2005,]
+MYPhePre2005<-rma.mv(g,Vg,random = formula(RandomTermString), mods= ~ CenteredPhe,test="z", data=Pre2005, method="ML")
+Pre2005$PredPre2005<-fitted(MYPhePre2005)
+print(MYPhePre2005) %>% kable() %>% kable_styling()
+```
+
+```{r}
+# explore interaction
+Post2005<-YearData[YearData$Year >= 2005,]
+MYPhePost2005<-rma.mv(g,Vg,random = formula(RandomTermString), mods= ~ CenteredPhe,test="z", data=Post2005, method="ML")
+Post2005$PredPost2005<-fitted(MYPhePost2005)
+print(MYPhePost2005) %>% kable() %>% kable_styling()
+```
+
+```{r}
+YPPlot<-ggplot(YearData,aes(x=CurrentPhe,y=g,color=Year)) + geom_point()
+YPPlot<-YPPlot + geom_line(data=Pre2005, aes(x=CurrentPhe,y=PredPre2005),color="red")
+YPPlot<-YPPlot + geom_line(data=Post2005, aes(x=CurrentPhe,y=PredPost2005),color="purple")
+YPPlot
+```
+```{r}
+cat(sprintf("Pre-2005 current Phe: mean %.2f, 90th percentile %.2f, sd %.2f\n",mean(Pre2005$CurrentPhe),
+            quantile(Pre2005$CurrentPhe,probs=c(0.9)),sd(Pre2005$CurrentPhe)))
+```
+
+```{r}
+cat(sprintf("Post-2005 current Phe: mean %.2f, 90th percentile %.2f, sd %.2f\n",mean(Post2005$CurrentPhe),
+            quantile(Post2005$CurrentPhe,probs=c(0.9)),sd(Post2005$CurrentPhe)))
+```
+
+```{r}
+AIC(MYNoMods,MYYearOnly,MYPheOnly,MYPheAndYear,MYPheYearInter)
+```
+
+
+```{r}
+anova(MYPheAndYear,MYPheOnly)
+```
+
+No influence of year
+
+```{r}
+anova(MYPheYearInter,MYPheOnly)
+```
+
+
+Interaction model is better than Phe only model
+
+Analyze the effect of the age when diet is initiated
+```{r}
+# remove lines without Age
+AgeData<-PheData[!is.na(PheData$Age),]
+print(sprintf("removed %d studies without an 'Age' or 'Phe' values. %d studies remaining.\n",nrow(MyData)-nrow(AgeData),nrow(AgeData)))
+```
+
+```{r}
+MANoMods<-rma.mv(g,Vg,random = formula(RandomTermString), 
+                 test="z", data=AgeData, method="ML")
+MAAgeOnly<-rma.mv(g,Vg,random = formula(RandomTermString), 
+                 mods= ~ CenteredAge,
+                 test="z", data=AgeData, method="ML")
+MAAgeandPhe<-rma.mv(g,Vg,random = formula(RandomTermString), 
+                 mods= ~ CenteredAge + CenteredPhe ,
+                 test="z", data=AgeData, method="ML")
+MAAgePheInter<-rma.mv(g,Vg,random = formula(RandomTermString), 
+                 mods= ~ CenteredAge*CenteredPhe ,
+                 test="z", data=AgeData, method="ML")
+print(MAAgeOnly) %>% kable() %>% kable_styling()
+print(MAAgeandPhe) %>% kable() %>% kable_styling()
+print(MAAgePheInter) %>% kable() %>% kable_styling()
+```
+
+```{r}
+# Does Phe have an influence (in data that can evaluate Age)?
+MAPheOnly<-rma.mv(g,Vg,random = formula(RandomTermString), 
+           mods= ~ CenteredPhe,
+           test="z", data=AgeData, method="ML")
+print(MAPheOnly) %>% kable() %>% kable_styling()
+```
+
+
+
+```{r}
+AIC(MANoMods,MAAgeOnly,MAPheOnly,MAAgeandPhe,MAAgePheInter)
+```
+No mods is best
+
+```{r}
+anova(MANoMods,MAAgeOnly)
+```
+
+
+```{r}
+anova(MANoMods,MAAgeandPhe)
+```
+
+Age does not influence the outcome
+
+
+```{r}
+# normal technique of ordering studies by standard errors is problematic for PKU studies
+# larger studies can have larger SE just because they include a wider range of patients.
+# To deal with this we order by study N rather than by standard error
+
+# order studies by N (higher N first)
+# create "sections" with N studies in each (N=20 here)
+# Run an analysis of based on section 1 only, then section 1 and 2, then 1,2,3 etc.
+# calculate an effect size measure and an Egger's test (based on sample size, not variance, because larger PKU samples may have large variances, but they still give a better characterization of the population)
+# see if the effect size is sensitive to the addition of the smaller studies.
+# The smaller studies are the ones where publication bias or other small sample effects are a worry
+# if the effect size is not substantially changed as studies with smaller N are
+# added, the small N studies are not distorting the estimate of the true effect size
+# If small N studies _do_ substantially change the effect size estimate, then
+# one may want to be concerned about the estimate that includes the small sample
+# studies -- or at least somewhat cautious in interpreting this.
+
+# order the studies by N
+MyDataSorted<-MyData[order(MyData$ExpN,decreasing=TRUE),]
+# set the number of measures in each section
+NumStudiesPerSection<-20 # actually number of measures, because one study may have several measures
+# calculate the number of sections - if N/NumMeasures is a whole number then use that
+# otherwise use N/NumMeasures + 1, chopping off any decimals
+NumSections<-ifelse(trunc(length(MyDataSorted[,1])/NumStudiesPerSection) == (length(MyDataSorted[,1])/NumStudiesPerSection),(length(MyDataSorted[,1])/NumStudiesPerSection),trunc(length(MyDataSorted[,1])/NumStudiesPerSection)+1)
+# Assign a section number to each measure
+# start by putting the max section number everywhere (because this could have less than 20 studies) -- we will overwrite this for all but the last section
+MyDataSorted$PBSection<-NumSections
+# Put section numbers against studies for all but the last section
+# all of these sections will have 20 measures in them
+MyDataSorted$PBSection[1:((NumSections-1)*NumStudiesPerSection)]<-rep(seq(from=1,to=NumSections-1),each=NumStudiesPerSection)
+```
+
+```{r}
+# sensitivity analysis
+
+CumResults<-data.frame()
+# lump the first two sections together to start and then add section by section
+# calculate an effect size (based on CurM) and an Egger's test (based on study N, not the variance of the effect sizes) for each cumulative set of studies as sections are added
+for(i in seq(2,NumSections)){
+  CurData<-MyDataSorted[MyDataSorted$PBSection <= i,]
+  
+  CurM<-rma.mv(g,Vg,random = formula(RandomTermString),test="z", data=CurData, method="REML")
+  CurEgger<-rma.mv(g,Vg,random = formula(RandomTermString),mods=ExpN,test="z", data=CurData, method="REML")
+  CurResult<-data.frame(NumStudies=length(CurData[,1]),
+                        AveStudySize=mean(CurData$ExpN),
+                        ES=CurM$b,
+                        ci.lb=CurM$ci.lb,
+                        ci.ub=CurM$ci.ub,
+                        zval=CurM$zval,pval=CurM$pval,
+                        Eggers=CurEgger$b["mods",],
+                        EggersCi.lb=CurEgger$ci.lb[2],
+                        EggersCi.ub=CurEgger$ci.ub[2],
+                        EggersPval=CurEgger$pval[2])
+  CumResults<-rbind(CumResults,CurResult)
+}
+print(CumResults)
+```
+
+```{r}
+write.csv(CumResults,"CumulativeResultsDataFrame.csv",row.names = FALSE)
+```
+
+
+```{r}
+# plot the sensitivity analysis
+
+ESRange<-data.frame(x=c(CumResults$NumStudies,
+                        CumResults$NumStudies[seq(length(CumResults$ci.lb),1,-1)]),
+                     y=c(CumResults$ci.ub,
+                         CumResults$ci.lb[seq(length(CumResults$ci.lb),1,-1)]))
+SSEffPlot<-ggplot(CumResults,aes(x=NumStudies,y=ES))+geom_polygon(data=ESRange,aes(x=x,y=y),fill="lightgrey",alpha=0.5)
+SSEffPlot<-SSEffPlot+geom_point()+geom_line()+ylim(-0.9,0.1)
+SSEffPlot<-SSEffPlot+geom_line(aes(x=NumStudies,y=ci.lb),linetype="dotted")
+SSEffPlot<-SSEffPlot+geom_line(aes(x=NumStudies,y=ci.ub),linetype="dotted")
+SSEffPlot<-SSEffPlot+geom_hline(yintercept = M1$b[1],linetype = "longdash")
+SSEffPlot<-SSEffPlot+ylab(expression("Cumulative estimate of Glass' " ~ Delta))
+SSEffPlot<-SSEffPlot+xlab("Number of measures included in the cumulative estimate")
+SSEffPlot<-SSEffPlot+geom_hline(yintercept = 0,linetype = "dashed",size=1.5)
+SSEffPlot<-SSEffPlot+annotate("label",label="No difference",x=175,y=0)
+SSEffPlot<-SSEffPlot+scale_x_continuous(name = "Number of measures included in the cumulative estimate",
+                                         breaks = c(seq(40,240,20)))
+print(SSEffPlot)
+```
+
+```{r}
+ggsave(paste0(ForestPlotsFolder,"/CumulativeESEstimate.tiff"),plot=SSEffPlot,height=10,width=16,units = "cm")
+```
+
+
+```{r}
+MinES<-min(CumResults$ES)
+MaxES<-max(CumResults$ES)
+cat(sprintf("Effect sizes ranged between %.3f and %.3f",MinES,MaxES))
+```
+
+
+```{r}
+AveESSym<-mean(CumResults[CumResults$EggersPval>0.05,]$ES)
+NSym<-length(CumResults[CumResults$EggersPval>0.05,]$ES)
+AveESAll<-mean(CumResults$ES)
+NAll<-length(CumResults[,1]) 
+# remember that the first section combines 2 bins (because of too many Ns that are the same)
+cat(sprintf("The average ES for sections with Egger's test > 0.05 = %0.3f N = %d\nAverage ES for all sections = %0.3f N = %d",AveESSym,NSym,AveESAll,NAll))
+```
+
+
+```{r}
+#,width=320, height=PlotHeight, units="mm",res=600
+ggsave(paste0(ForestPlotsFolder,"/OverallPheCorrelation2.tiff"), units="mm", width=220, dpi=300)
+```
+
+
+```{r}
+# descriptive stats for age
+AgeCatTable<-MyData %>% filter(!is.na(Age)) %>% group_by(Age) %>%
+  summarise(N=n())
+print(AgeCatTable)
+```
+
+
+```{r}
+cor.test(PheData$CurrentPhe,PheData$HedgesG)
+```
+
+```{r}
+cor.test(PheData$CurrentPhe,PheData$g)
+```
+
+```{r}
+PheCorPlot<-ggplot(PheData,aes(x=CurrentPhe,y=g)) + geom_point(alpha=0.7, shape=1) + geom_smooth(method="lm",color="black",size=0.5) + ylab(expression("Glass' " ~ Delta)) + xlab("Current mean Phe for PKU group")
+print(PheCorPlot)
+```
+
+```{r}
+WtMatrix<-weights(M3Phe,type="matrix")
+WtRowSum<-apply(WtMatrix,1,sum)
+PheData$Weights<-WtRowSum/sum(WtRowSum)
+
+PheCorPlot<-ggplot(PheData,aes(x=CurrentPhe,y=g,size=Weights)) + geom_point(color="darkgrey",alpha=0.9,shape=1) + geom_smooth(method="lm",color="black",size=0.5) + ylab(expression("Glass' " ~ Delta)) + xlab("Current mean Phe for PKU group")
+print(PheCorPlot)
+```
+
+```{r}
+NforAge<-sum(!is.na(AgeData$Age))
+print(NforAge)
+```
+
+```{r}
+cor.test(AgeData$Age,AgeData$HedgesG)
+```
+
+
+
+```{r}
+cor.test(AgeData$Age,AgeData$g)
+```
+
+```{r}
+AgeCorPlot<-ggplot(AgeData,aes(x=Age,y=g)) + geom_point(alpha=0.7, shape=1) + geom_smooth(method="lm",color="black",size=0.5) + ylab(expression("Glass' " ~ Delta)) + xlab("Age")
+print(AgeCorPlot)
+```
+
+```{r}
+AgeData2<-AgeData[!is.na(AgeData$CurrentPhe),]
+cor.test(AgeData2$Age,AgeData2$CurrentPhe)
+```
+
+```{r}
+AgePheCorPlot<-ggplot(AgeData2,aes(x=Age,y=CurrentPhe)) + geom_point(alpha=0.7, shape=1) + geom_smooth(method="lm",color="black",size=0.5) + ylab("Current mean Phe for PKU group") + xlab("Age")
+print(AgePheCorPlot)
+```
+
+```{r}
+cor.test(YearData$Year,YearData$HedgesG)
+```
+
+```{r}
+YearCor<-ggplot(YearData,aes(x=Year,y=HedgesG))+geom_point(alpha=0.9,shape=1)+
+  geom_smooth(method="lm",color="black",size=0.5)
+print(YearCor)
+```
+
+
+```{r}
+cor.test(YearData$Year,YearData$g)
+```
+
+```{r}
+YearData2<-YearData[!is.na(YearData$CurrentPhe),]
+cor.test(YearData$Year,YearData$CurrentPhe)
+```
+```{r}
+YearPheCorPlot<-ggplot(YearData,aes(x=Year,y=CurrentPhe)) + geom_point(alpha=0.7, shape=1) + geom_smooth(method="lm",color="black",size=0.5) + ylab("Current mean Phe for PKU group") + xlab("Year")
+print(YearPheCorPlot)
+```
+
+```{r}
+YearData3<-YearData[!is.na(YearData$Age),]
+cor.test(YearData$Year,YearData$Age)
+```
+
+```{r}
+YearAgeCorPlot<-ggplot(YearData,aes(x=Age,y=Year)) + geom_point(alpha=0.7, shape=1) + geom_smooth(method="lm",color="black",size=0.5) + ylab("Year") + xlab("Age")
+print(YearAgeCorPlot)
+```
+
+```{r}
+YearPlot<-ggplot(YearData,aes(x=Year,y=CohensD))+geom_point(alpha=0.9,shape=1)+geom_smooth(method="lm",color="black",size=0.5) + ylab("Cohen's D")
+print(YearPlot)
+```
+
+```{r}
+# group by StudyFactor so Palermo 2017,2020 and DeFelice are grouped together
+# and the two studies by Jahia are grouped
+StudySum<-MyData %>% group_by(Function,StudyFactor) %>% summarise(NMeas=n(),PKU_Ppt=max(ExpN),Control_Ppt=max(ControlN))
+NSummary<-StudySum %>% group_by(Function) %>%  summarise(NStudies=n(),NMeasures=sum(NMeas),
+          PKU_NPpt=sum(PKU_Ppt),Control_NPpt=sum(Control_Ppt)) 
+print(NSummary)
+```
+
+
+```{r}
+ESSummary <- MyData %>% group_by(Function) %>% summarise(
+  MeanCohensD=mean(CohensD,na.rm=TRUE),
+  MeanHedgesG=mean(HedgesG,na.rm=TRUE),
+  SDHedgesG=sd(HedgesG,na.rm=TRUE),
+  AdjGlassDelta=mean(g), 
+  SDAdjGlassDelta=sd(g), 
+  CurrentPhe=mean(.data$CurrentPhe[!is.nan(.data$CurrentPhe)],na.rm=TRUE))
+#SumTable$Function<-factor(SumTable$Function)
+ESSummary<-ESSummary[order(ESSummary$Function),]
+print(ESSummary)
+```
+
+```{r}
+OASummary<-left_join(NSummary,ESSummary,by="Function")
+```
+
+```{r}
+# .csv file has the order of functions to use
+TableOrder<-read.csv("SummaryTableFunctionOrder.csv",encoding="UTF-8")
+TableOrder<-TableOrder[order(TableOrder$Order),]
+print(TableOrder)
+```
+
+```{r}
+OASummary<-left_join(OASummary,TableOrder,by="Function")
+OASummary<-OASummary[order(OASummary$Order),]
+print(OASummary)
+```
+
+```{r}
+write.csv(OASummary,paste0(FunctionResultsFolder,"/FunctionSummaryTable.csv"))
+```
+
+# Phe by function
+```{r}
+PheSumByFunction<-MyData  %>%
+  group_by(Function) %>%
+  summarise(Phe=mean(CurrentPhe,na.rm=TRUE),N=n())
+print(PheSumByFunction)
+```
+
+```{r}
+FunctionSummary<-left_join(PheSumByFunction,TableOrder,by="Function")
+FunctionSummary<-FunctionSummary[order(FunctionSummary$Order),]
+print(FunctionSummary)
+write.csv(FunctionSummary,paste0(FunctionResultsFolder,"/PheAveragesByFunction.csv"))
+```
+
+```{r}
+cat(sprintf("Total number of measures collected (includes IQ): %d\n",sum(FunctionSummary$N)))
+```
+
+
+
+```{r}
+# This reports a single Phe value for each study, which is the max of the Phe values reported
+# if more than one is reported for a single study group 
+AvePheSummary <- MyData %>% group_by(StudyFactor) %>% summarise(MaxPhe=max(CurrentPhe),MinPhe=min(CurrentPhe),N=n())
+print(AvePheSummary)
+```
+
+```{r}
+AvePheSummary<-AvePheSummary[!is.na(AvePheSummary$MaxPhe),]
+MeanPhe<-mean(AvePheSummary$MaxPhe,na.rm=TRUE)
+SDPhe<-sd(AvePheSummary$MaxPhe,na.rm=TRUE)
+NPhe<-sum(AvePheSummary$N,na.rm=TRUE)
+MinPhe<-min(AvePheSummary$MaxPhe)
+MaxPhe<-max(AvePheSummary$MaxPhe)
+NStudies<-length(AvePheSummary$MaxPhe)
+print(paste0("Average Phe across ",NStudies," studies was: ",MeanPhe," SD: ",
+             SDPhe," range: [",MinPhe,", ",MaxPhe,"]"))
+```
+
+```{r}
+AgeSummary<-MyData %>% group_by(Age) %>% summarise(N=n())
+print(AgeSummary)
+```
+
+```{r}
+# coefficient from regression using Phe above was, e.g. -.0003
+# what is unit of Phe is ,micro mole - so coefficient for 100 um is
+# -.0003 for 1/1000 mole; for 100 um multiply -.0003 by 100 = -.04
+# for 500 um multiply  -0.04 x 5 = -.2
+
+# change for 500 um
+ES<-  M3Phe$b[[2,1]] * 100 * 5
+print(pnorm(ES))
+PlacesChanged<- -1*(50-(100*pnorm(ES)))
+print(PlacesChanged) # places changed for 500 um in a sample of 100 with mean at 50
+```
+
+
+
+```{r}
+# coefficient from regression using Phe above was = -.0004
+# what is unit of Phe is ,micro mole - so coefficient for 100 um is
+# -.0004 for 1/1000 mole; for 100 um multiply -.0004 by 100 = -.04
+# for 500 um multiply  -0.04 x 5 = -.2
+
+# change for 100 um
+ES<-  M3Phe$b[[2,1]] * 100
+print(ES)
+print(pnorm(ES))
+PlacesChanged<- -1*(50-(100*pnorm(ES)))
+print(PlacesChanged) # places changed for 100 um in a sample of 100 with mean at 50
+```
+
+
+```{r}
+# use this as a calculator for ES/norm percentage/places changed in a normal distribution
+# with 100 persons and a mean of 50
+ES <- -1.02
+norm_percent<-pnorm(ES)
+PlacesChanged<- -1*(50-(100*pnorm(ES)))
+cat(sprintf("ES = %0.2f \nPercent of normal distribution = %0.2f\nPlaces changed: %0.2f\n",
+            ES,norm_percent,PlacesChanged))
+```
+

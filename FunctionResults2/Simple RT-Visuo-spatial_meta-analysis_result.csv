@@ -1,0 +1,2 @@
+function_order,function_name,N_Groups,N_Measures,N_PKU,Current_Phe,N_Control,combined_es,es_ci_upper,es_ci_lower,z_value,p_value,heterogeneity_q_value,heterogeneity_df,heterogeneity_p_value,heterogeneity_i_value,heterogeneity_tau_value,Phe_coefficient,Phe_model_AIC_diff,Phe_model_p_value
+15,Simple RT: Visuo-spatial,4,4,133,965.75,126,-0.3053221875965209,0.06419792214560621,-0.6748422973386481,-1.6194531111927197,0.10534980731919955,6.376528248191693,3,0.09466119920259362,0.5295245495304183,0.23187502707095187,-0.002924931870302062,2.2450343033793114,0.03936527444755793

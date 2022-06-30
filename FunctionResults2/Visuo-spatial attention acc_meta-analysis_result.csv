@@ -1,0 +1,2 @@
+function_order,function_name,N_Groups,N_Measures,N_PKU,Current_Phe,N_Control,combined_es,es_ci_upper,es_ci_lower,z_value,p_value,heterogeneity_q_value,heterogeneity_df,heterogeneity_p_value,heterogeneity_i_value,heterogeneity_tau_value,Phe_coefficient,Phe_model_AIC_diff,Phe_model_p_value
+17,Visuo-spatial attention: accuracy,3,9,113,805.6666666666666,106,-0.05844328053861897,0.10351333189611131,-0.22039989297334925,-0.7072679730210275,0.47939996439841226,3.9284145289110115,8,0.8635236739037007,-1.0364449680970063,0,-4.425913796273938e-4,-2.048531992202527,1

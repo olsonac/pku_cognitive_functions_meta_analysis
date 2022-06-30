@@ -1,0 +1,2 @@
+function_name,combined_es,z_value,p_value,es_ci_lower,es_ci_upper,homogeneity_q_value,homogeneity_df,homogeneity_p_value,homogeneity_i_value,homogeneity_tau_value
+accuracy,-0.3735551846125926,-2.503036144677892,0.01231329682887037,-0.6660618308452666,-0.0810485383799186,50.93886844023146,36,0.05057813511421971,0.29327052008938537,0.030505317340444493

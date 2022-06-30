@@ -1,0 +1,2 @@
+function_order,function_name,N_Groups,N_Measures,N_PKU,Current_Phe,N_Control,combined_es,es_ci_upper,es_ci_lower,z_value,p_value,heterogeneity_q_value,heterogeneity_df,heterogeneity_p_value,heterogeneity_i_value,heterogeneity_tau_value,Phe_coefficient,Phe_model_AIC_diff,Phe_model_p_value
+18,Visuo motor control,6,16,235,857,191,-0.5254739559918346,-0.26256311652077646,-0.7883847954628926,-3.9173357425271016,8.953301192951159e-5,50.693217736430505,15,9.271934640205421e-6,0.704102428889214,0.1679030528661783,0.0016422826127854592,0.8242985654446677,0.09284744781810406

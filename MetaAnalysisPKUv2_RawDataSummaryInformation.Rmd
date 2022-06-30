@@ -1,0 +1,138 @@
+---
+title: "MetaAnalysisPKUv2_RawDataSummaryInformation.Rmd"
+author: "Andrew Olson"
+date: "10/05/2022"
+output: html_document
+knit: (function(inputFile, encoding) { 
+      out_dir <- 'FunctionResults2';
+      rmarkdown::render(inputFile,
+                        encoding=encoding, 
+                        output_file=file.path(dirname(inputFile), out_dir, 'RawDataSummaryInformation.html')) })
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(kableExtra)
+library(tidyr)
+library(broom)
+
+knitr::opts_chunk$set(echo = TRUE)
+
+CurDir<-"~/Documents/current/PKU/pku_cog_functions_meta_analysis/May2022_meta-analysis_with_added_papers"
+knitr::opts_knit$set(root.dir=CurDir)
+
+setwd(CurDir)
+source("ForestPlotFunctions.R")
+```
+
+```{r}
+RawData<-as_tibble(read.csv("DataForMetaAnalysis.csv"))
+RawData$StudyFactor <- as.factor(RawData$StudyFactor)
+head(RawData)
+```
+
+```{r results = "asis"}
+# Number of PKU/control groups and control and exp N
+
+GroupSummary <- RawData %>% group_by(StudyFactor) %>% 
+  summarize(PKU_N_Min=min(ExpN),Control_N_Min=min(ControlN), 
+            PKU_N_Max=max(ExpN),Control_N_Max=max(ControlN))
+DispcrepNRow = (GroupSummary$PKU_N_Min != GroupSummary$PKU_N_Max) | 
+  (GroupSummary$Control_N_Min != GroupSummary$Control_N_Max) # check that there is only one value for N for each study
+if(!all(DispcrepNRow == FALSE)){
+  cat("Studies with more than one N reported in the same study:\n\n")
+  DiscrepantRows=GroupSummary[DispcrepNRow,]
+  DiscrepantRows %>% kable() %>% kable_styling()
+}
+
+```
+
+
+```{r results = "asis"}
+cat("\nStudies and N for PKU and Control groups (min N is used when there is more than one reported)\n")
+GroupSummary <- GroupSummary %>% select(-PKU_N_Max,-Control_N_Max) # drop check columns if no problems
+GroupSummary %>%  kable() %>% kable_styling() 
+```
+
+```{r}
+# separate IQ and non-IQ data
+IQData <- RawData[RawData$Function == "IQ",]
+NoIQData <- RawData[RawData$Function != "IQ",]
+CurData <- NoIQData
+```
+
+```{r}
+TotalStudies<-length(unique(CurData$StudyName))
+cat(sprintf("Number of studies (some 'studies' come from the same publication, so this does not match the number of publications (e.g. Dawson 2011-on diet, Dawson 2011-off diet - two study entries, one publication)): %d\n",TotalStudies))
+
+TotalGroups<-length(GroupSummary$StudyFactor)
+cat(sprintf("Number of PKU/control groups: %d\n",TotalGroups))
+
+TotalN_PKU <- sum(GroupSummary$PKU_N_Min)
+TotalN_Control <- sum(GroupSummary$Control_N_Min)
+cat(sprintf("Total number of PKU participants    : %0.1f\n",TotalN_PKU))
+cat(sprintf("Total number of control participants: %0.1f\n",TotalN_Control))
+MeasureCount <- nrow(CurData) # number of lines in raw data  = total number of measures used
+cat(sprintf("Total number of non-IQ measures across all studies: %d\n",MeasureCount))
+FunctionCount <- length(unique(CurData$Function))
+cat(sprintf("Total number of non-IQ functions assessed: %d\n",FunctionCount))
+```
+
+```{r}
+cat("Funtions assessed are:\n") # IQ separate
+unique(CurData$Function) %>% kable()
+```
+
+```{r}
+cat(sprintf("Number of functions assessed are: %d\n",length(unique(CurData$Function)))) # IQ separate
+```
+
+```{r}
+FunctionSummary <- CurData %>% group_by(Function) %>% summarize(MeasureCount = n(), GroupCount = length(unique(StudyFactor)))
+FunctionSummary %>% kable() %>% kable_styling()
+```
+
+Number of groups/measures in each function group.
+
+```{r}
+FunctionSummaryLong <- FunctionSummary %>% pivot_longer(c("MeasureCount","GroupCount"),names_to="CountType",values_to="Count")
+FunctionSummaryStats <- FunctionSummaryLong %>% group_by(CountType) %>% summarise(Mean=mean(Count), SD = sd(Count), N=sum(Count), Min=min(Count), Max=max(Count))
+FunctionSummaryStats %>% kable() %>% kable_styling()
+```
+
+```{r}
+cat(sprintf("Number of patient groups in the studies included: %d",length(unique(CurData$StudyFactor))))
+```
+
+
+```{r}
+TotalParticipants <- sum(GroupSummary$PKU_N_Min)
+cat(sprintf("Total PKU participants: %d\n",TotalParticipants))
+```
+
+```{r}
+PercentDietInterruptedPpt <- 16/TotalParticipants
+cat(sprintf("Diet interrupted participant percentage: %.3f\n",PercentDietInterruptedPpt))
+```
+
+```{r}
+cat(sprintf("Total number of measures: %d\n",sum(FunctionSummary$MeasureCount)))
+```
+
+```{r}
+GroupPheSummary <- RawData %>% group_by(StudyFactor) %>% 
+  summarize(Phe = mean(CurrentPhe), ExpN=min(ExpN))
+GroupPheSummary %>% kable() %>% kable_styling()
+```
+
+```{r}
+GroupPheNoMissingPhe<-GroupPheSummary[!is.na(GroupPheSummary$Phe),]
+OverallPheMean <- mean(GroupPheNoMissingPhe$Phe,na.rm=TRUE)
+CountN<- length(GroupPheNoMissingPhe$Phe)
+WtOverallPheMean <- sum(GroupPheNoMissingPhe$Phe * (GroupPheNoMissingPhe$ExpN/sum(GroupPheNoMissingPhe$ExpN)))
+cat(sprintf("Unweighted overall Phe mean (each study counts the same, N=%d) = %0.2f\n",CountN,OverallPheMean))
+cat(sprintf("Weighted overall Phe mean (each study counts according to num ppt) = %0.2f\n",WtOverallPheMean))
+```
+
+
+

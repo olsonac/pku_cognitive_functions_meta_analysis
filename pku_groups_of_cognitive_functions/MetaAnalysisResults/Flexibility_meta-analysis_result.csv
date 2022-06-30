@@ -1,0 +1,2 @@
+function_name,combined_es,z_value,p_value,es_ci_lower,es_ci_upper,homogeneity_q_value,homogeneity_df,homogeneity_p_value,homogeneity_i_value,homogeneity_tau_value
+Flexibility,-0.4706813028697967,-2.9906798848279394,0.002783571268255482,-0.7791457448521137,-0.16221686088747966,49.82503943495081,26,0.0032987879849093312,0.4781740206358621,0.12210062178790203

@@ -335,16 +335,16 @@ print(FTable)</code></pre>
 <pre><code>## # A tibble: 21 × 6
 ##    Function               MeanCohensD MeanHedgesG SDHedgesG MeanGlassDelta     N
 ##    &lt;chr&gt;                        &lt;dbl&gt;       &lt;dbl&gt;     &lt;dbl&gt;          &lt;dbl&gt; &lt;int&gt;
-##  1 &quot;Flexibility&quot;              -0.460      -0.451     0.483          -0.730    35
-##  2 &quot;Higher Language Skil…     -0.299      -0.295     0.401          -0.444    15
-##  3 &quot;Inhibition&quot;               -0.0734     -0.0677    0.710          -0.153    19
-##  4 &quot;IQ&quot;                       -0.604      -0.590     0.444          -0.670    19
-##  5 &quot;Language Accuracy&quot;        -0.175      -0.172     0.186          -0.256     9
-##  6 &quot;Naming RT&quot;                -0.434      -0.428     0.363          -0.626     7
-##  7 &quot;Phonological Tasks&quot;       -0.319      -0.315     0.0397         -0.500     2
-##  8 &quot;Reasoning &quot;               -0.721      -0.705     0.431          -1.64      6
-##  9 &quot;Simple RT-Visuo-spat…     -0.221      -0.219     0.279          -0.751     4
-## 10 &quot;Social Cognition&quot;         -0.426      -0.419     0.314          -0.448    16
+##  1 &quot;Flexibility&quot;               -0.460      -0.451    0.483          -0.730    35
+##  2 &quot;Higher Language Skil…      -0.299      -0.295    0.401          -0.444    15
+##  3 &quot;Inhibition&quot;               Inf         Inf      NaN           17544.       19
+##  4 &quot;IQ&quot;                        -0.604      -0.590    0.444          -0.670    19
+##  5 &quot;Language Accuracy&quot;         -0.175      -0.172    0.186          -0.256     9
+##  6 &quot;Naming RT&quot;                 -0.434      -0.428    0.363          -0.626     7
+##  7 &quot;Phonological Tasks&quot;        -0.319      -0.315    0.0397         -0.500     2
+##  8 &quot;Reasoning &quot;                -0.721      -0.705    0.431          -1.64      6
+##  9 &quot;Simple RT-Visuo-spat…      -0.221      -0.219    0.279          -0.751     4
+## 10 &quot;Social Cognition&quot;          -0.426      -0.419    0.314          -0.448    16
 ## # … with 11 more rows</code></pre>
 <pre class="r"><code>CalculateGVg&lt;-function(ExpMean, ExpSD, ExpN, 
                        ControlMean, ControlSD, ControlN, 
@@ -627,7 +627,7 @@ WCST- N of completed categories
 5.60
 </td>
 <td style="text-align:right;">
-1.20
+1.2
 </td>
 <td style="text-align:right;">
 14
@@ -639,7 +639,7 @@ NA
 6.00
 </td>
 <td style="text-align:right;">
-0.10
+1.00e-01
 </td>
 <td style="text-align:right;">
 14
@@ -669,7 +669,7 @@ Nardecchia et al 2015
 -0.4560933744
 </td>
 <td style="text-align:right;">
-0.10
+0.1
 </td>
 <td style="text-align:right;">
 -4.000000000
@@ -690,19 +690,19 @@ Nardecchia et al 2015
 -3.764705882
 </td>
 <td style="text-align:right;">
-10.9022586410
+1.090225864e+01
 </td>
 <td style="text-align:right;">
 -0.7011070872
 </td>
 <td style="text-align:right;">
-0.8541604905
+8.541604905e-01
 </td>
 <td style="text-align:right;">
--2.836508313
+-2.836508313e+00
 </td>
 <td style="text-align:right;">
-1.4342941390
+1.434294139e+00
 </td>
 <td style="text-align:right;">
 1
@@ -713,49 +713,49 @@ Nardecchia et al 2015
 Inhibition
 </td>
 <td style="text-align:left;">
-Channon et al 2007 off diet
+Channon et al 2005 on diet
 </td>
 <td style="text-align:right;">
-2007
+2005
 </td>
 <td style="text-align:left;">
-Flanker task, Comp-inc N cor
+Flanker Task, Inc-comp-Speed
 </td>
 <td style="text-align:left;">
-Flanker task; off diet - Difference compatible-incompatible - Number correct
+Flanker Task; on diet - Difference Incompatible- compatible - Speed per item (sec.)
+</td>
+<td style="text-align:right;">
+2
 </td>
 <td style="text-align:right;">
 3
 </td>
 <td style="text-align:right;">
-4
+0.02
 </td>
 <td style="text-align:right;">
-0.95
-</td>
-<td style="text-align:right;">
-0.55
+0.0
 </td>
 <td style="text-align:right;">
 25
 </td>
 <td style="text-align:right;">
-1286
+759
 </td>
 <td style="text-align:right;">
-2.06
+0.03
 </td>
 <td style="text-align:right;">
-0.48
+3.00e-08
 </td>
 <td style="text-align:right;">
-45
+25
 </td>
 <td style="text-align:right;">
 1
 </td>
 <td style="text-align:right;">
-2.29
+0.77
 </td>
 <td style="text-align:right;">
 2
@@ -767,49 +767,49 @@ NA
 NA
 </td>
 <td style="text-align:left;">
-Channon et al 2007 off diet
+Channon et al 2005 on diet
 </td>
 <td style="text-align:right;">
-2.1944857466
+Inf
 </td>
 <td style="text-align:right;">
-2.1701925465
+Inf
 </td>
 <td style="text-align:right;">
-0.48
+0.0
 </td>
 <td style="text-align:right;">
-2.312500000
+333333.333333333
 </td>
 <td style="text-align:right;">
-2.312500000
+333333.333333333
 </td>
 <td style="text-align:right;">
-0.0747395833
+0.0400000000
 </td>
 <td style="text-align:right;">
-44
+24
 </td>
 <td style="text-align:right;">
-0.9828571429
+0.9684210526
 </td>
 <td style="text-align:right;">
-2.272857143
+322807.017543860
 </td>
 <td style="text-align:right;">
-0.1334427605
+2.170924387e+09
 </td>
 <td style="text-align:right;">
--0.1339563771
+16989.6648259537
 </td>
 <td style="text-align:right;">
-0.8460693990
+7.405705199e+04
 </td>
 <td style="text-align:right;">
--2.249129874
+-1.681529651e+05
 </td>
 <td style="text-align:right;">
-1.9812171204
+2.021322948e+05
 </td>
 <td style="text-align:right;">
 1
@@ -841,7 +841,7 @@ N correct?
 144.00
 </td>
 <td style="text-align:right;">
-65.70
+65.7
 </td>
 <td style="text-align:right;">
 19
@@ -853,7 +853,7 @@ N correct?
 258.00
 </td>
 <td style="text-align:right;">
-27.50
+2.75e+01
 </td>
 <td style="text-align:right;">
 25
@@ -883,7 +883,7 @@ Pilotto et al 2021
 -2.3435165194
 </td>
 <td style="text-align:right;">
-27.50
+27.5
 </td>
 <td style="text-align:right;">
 -4.145454545
@@ -904,19 +904,19 @@ Pilotto et al 2021
 -4.014545455
 </td>
 <td style="text-align:right;">
-0.6761701609
+6.761701609e-01
 </td>
 <td style="text-align:right;">
 -1.2584369135
 </td>
 <td style="text-align:right;">
-1.1021402352
+1.102140235e+00
 </td>
 <td style="text-align:right;">
--4.013787502
+-4.013787502e+00
 </td>
 <td style="text-align:right;">
-1.4969136746
+1.496913675e+00
 </td>
 <td style="text-align:right;">
 1
@@ -948,7 +948,7 @@ Digit span
 14.00
 </td>
 <td style="text-align:right;">
-3.20
+3.2
 </td>
 <td style="text-align:right;">
 19
@@ -960,7 +960,7 @@ Digit span
 19.00
 </td>
 <td style="text-align:right;">
-2.40
+2.40e+00
 </td>
 <td style="text-align:right;">
 25
@@ -990,7 +990,7 @@ Pilotto et al 2021
 -1.7718084608
 </td>
 <td style="text-align:right;">
-2.40
+2.4
 </td>
 <td style="text-align:right;">
 -2.083333333
@@ -1011,19 +1011,19 @@ Pilotto et al 2021
 -2.017543860
 </td>
 <td style="text-align:right;">
-0.2183689853
+2.183689853e-01
 </td>
 <td style="text-align:right;">
 -0.4662472760
 </td>
 <td style="text-align:right;">
-0.5894578093
+5.894578093e-01
 </td>
 <td style="text-align:right;">
--1.939891799
+-1.939891799e+00
 </td>
 <td style="text-align:right;">
-1.0073972473
+1.007397247e+00
 </td>
 <td style="text-align:right;">
 1
@@ -1054,7 +1054,7 @@ Story recall
 13.00
 </td>
 <td style="text-align:right;">
-5.60
+5.6
 </td>
 <td style="text-align:right;">
 19
@@ -1066,7 +1066,7 @@ Story recall
 20.00
 </td>
 <td style="text-align:right;">
-3.10
+3.10e+00
 </td>
 <td style="text-align:right;">
 25
@@ -1096,7 +1096,7 @@ Pilotto et al 2021
 -1.5799150034
 </td>
 <td style="text-align:right;">
-3.10
+3.1
 </td>
 <td style="text-align:right;">
 -2.258064516
@@ -1117,19 +1117,19 @@ Pilotto et al 2021
 -2.186757216
 </td>
 <td style="text-align:right;">
-0.3113739824
+3.113739824e-01
 </td>
 <td style="text-align:right;">
 -0.4007835644
 </td>
 <td style="text-align:right;">
-0.6182152102
+6.182152102e-01
 </td>
 <td style="text-align:right;">
--1.946321590
+-1.946321590e+00
 </td>
 <td style="text-align:right;">
-1.1447544612
+1.144754461e+00
 </td>
 <td style="text-align:right;">
 1
@@ -1160,7 +1160,7 @@ Baxt ideomotor apraxia
 33.00
 </td>
 <td style="text-align:right;">
-4.80
+4.8
 </td>
 <td style="text-align:right;">
 19
@@ -1172,7 +1172,7 @@ Baxt ideomotor apraxia
 35.00
 </td>
 <td style="text-align:right;">
-1.60
+1.60e+00
 </td>
 <td style="text-align:right;">
 25
@@ -1202,7 +1202,7 @@ Pilotto et al 2021
 -0.5833182484
 </td>
 <td style="text-align:right;">
-1.60
+1.6
 </td>
 <td style="text-align:right;">
 -1.250000000
@@ -1223,19 +1223,19 @@ Pilotto et al 2021
 -1.210526316
 </td>
 <td style="text-align:right;">
-0.5442128347
+5.442128347e-01
 </td>
 <td style="text-align:right;">
 -0.2486709698
 </td>
 <td style="text-align:right;">
-0.3816191609
+3.816191609e-01
 </td>
 <td style="text-align:right;">
--1.202718872
+-1.202718872e+00
 </td>
 <td style="text-align:right;">
-0.7053769325
+7.053769325e-01
 </td>
 <td style="text-align:right;">
 1

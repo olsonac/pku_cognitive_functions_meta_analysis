@@ -254,11 +254,13 @@ anova(M3NoPheNoREML,M3PheNoREML)
 When comparing models with and without Phe, model with Phe is better p=0.05
 
 ```{r}
-PhePlot<-ggplot(PheData,aes(x=CenteredPhe,y=g))+geom_point() + geom_smooth(method="lm")
+PhePlot<-ggplot(PheData,aes(x=CurrentPhe,y=g))+geom_point(color="black",fill="black",alpha=.5,shape=21,size=3) + geom_smooth(method="lm",linetype="dashed",color="black")
+PhePlot<-PhePlot + xlab(expression("Current Phe - "~mu*"mol / L"))
+PhePlot<-PhePlot + ylab(expression("Glass'"~Delta)) + scale_x_continuous(breaks=seq(500,2000,100))
 PhePlot
 ```
 ```{r}
-ggsave(paste0(ForestPlotsFolder,"/OverallPheEffect.tiff"),plot=PhePlot,height=10,width=16,units = "cm")
+ggsave(paste0(ForestPlotsFolder,"/OverallPheEffect.tiff"),plot=PhePlot,units="mm", width=150, height=105, dpi=300)
 ```
 
 
